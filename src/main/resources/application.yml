@@ -1,3 +1,18 @@
 spring:
   application:
     name: green-energy-platform
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/green_energy_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Taipei&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+green-energy:
+  title: Green Energy Platform
+  version: 1.0.0
