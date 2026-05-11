@@ -1,0 +1,8 @@
+,--.                    ,--.       ,--.
+|  |,-. ,---. ,--,--,--.`--' ,---. |  |
+|     /| .-. :|        |,--.| .-. :|  |
+|  \  \\   --.|  |  |  ||  |\   --.|  |
+`--'`--'`----'`--`--`--'`--' `----'`--'
+${green-energy.title}
+Version: ${green-energy.version}
+Powered by Spring Boot ${spring-boot.version}
