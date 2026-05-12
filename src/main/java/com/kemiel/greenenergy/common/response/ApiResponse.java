@@ -29,6 +29,10 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage(), data);
     }
 
+    public static ApiResponse<Void> success() {
+        return new ApiResponse<>(true, ErrorCode.SUCCESS.getCode(), ErrorCode.SUCCESS.getMessage(), null);
+    }
+
     public static <T> ApiResponse<T> error(ErrorCode errorCode){
         return new ApiResponse<>(false, errorCode.getCode(), errorCode.getMessage(), null);
     }
