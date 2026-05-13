@@ -6,11 +6,8 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * 分頁查詢結果容器
- * <p>
- * 將 PageHelper 的 {@link PageInfo} 轉換為統一的分頁回傳格式。
+ * 分頁查詢結果容器，將 PageHelper 的 PageInfo 轉換為統一的分頁回傳格式。
  * 頁碼從 0 開始，與前端慣例一致。
- * </p>
  *
  * @param <T> 分頁資料的型別
  */
@@ -35,7 +32,7 @@ public class PageResult<T> {
     }
 
     /**
-     * 將 PageHelper 分頁結果轉換為 PageResult
+     * 將 PageHelper 分頁結果轉換為 PageResult，頁碼自動從 1-based 轉為 0-based。
      *
      * @param pageInfo PageHelper 查詢結果
      * @param <T>      資料型別
