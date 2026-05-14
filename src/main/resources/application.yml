@@ -16,6 +16,9 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
 
 pagehelper:
   helper-dialect: mysql
