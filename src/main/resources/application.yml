@@ -28,3 +28,9 @@ pagehelper:
 green-energy:
   title: Green Energy Platform
   version: 1.0.0
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
