@@ -209,16 +209,3 @@ CREATE TABLE audit_logs (
     operator_name VARCHAR(100) NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- =============================================
--- 初始資料：ADMIN 帳號
--- =============================================
-INSERT INTO users (username, password, display_name, role, is_active, created_by)
-VALUES (
-    'admin',
-    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE5cs8G.06mJ0VE0K',
-    '系統管理者',
-    'ADMIN',
-    1,
-    NULL
-);
