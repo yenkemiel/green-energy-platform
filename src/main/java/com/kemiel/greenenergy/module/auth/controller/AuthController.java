@@ -4,6 +4,8 @@ import com.kemiel.greenenergy.common.response.ApiResponse;
 import com.kemiel.greenenergy.module.auth.dto.LoginRequest;
 import com.kemiel.greenenergy.module.auth.dto.LoginResponse;
 import com.kemiel.greenenergy.module.auth.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 認證控制器，處理登入與登出請求。
  */
+@Tag(name = "認證", description = "登入、登出")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class AuthController {
     /**
      * 使用者登入，驗證帳號密碼並回傳 JWT Token。
      */
+    @Operation(summary = "使用者登入")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody @Valid LoginRequest request
@@ -35,6 +39,7 @@ public class AuthController {
     /**
      * 使用者登出，第一階段 stateless，由前端清除 Token。
      */
+    @Operation(summary = "使用者登出")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
         return ResponseEntity.ok(ApiResponse.success());
