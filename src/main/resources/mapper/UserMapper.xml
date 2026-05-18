@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.auth.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.kemiel.greenenergy.module.auth.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="display_name" property="displayName"/>
+        <result column="role" property="role" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result column="is_active" property="isActive"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="long" resultMap="UserResultMap">
+        SELECT id, username, password, display_name, role,
+                is_active, created_by, created_at, updated_at, is_deleted
+        FROM users
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="selectByUsername" parameterType="string" resultMap="UserResultMap">
+        SELECT id, username, password, display_name, role,
+        is_active, created_by, created_at, updated_at, is_deleted
+        FROM users
+        WHERE username = #{username} AND is_deleted = 0
+    </select>
+
+    <insert id="insert" parameterType="com.kemiel.greenenergy.module.auth.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, display_name, role, is_active, created_by)
+        VALUES (#{username}, #{password}, #{displayName}, #{role}, #{isActive}, #{createdBy})
+    </insert>
+
+    <update id="updateById" parameterType="com.kemiel.greenenergy.module.auth.entity.User">
+        UPDATE users
+        SET display_name = #{displayName},
+            is_active    = #{isActive},
+            updated_at   = NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+</mapper>
