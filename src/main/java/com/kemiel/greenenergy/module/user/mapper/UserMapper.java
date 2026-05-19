@@ -1,7 +1,7 @@
-package com.kemiel.greenenergy.module.auth.mapper;
+package com.kemiel.greenenergy.module.user.mapper;
 
 import com.kemiel.greenenergy.common.enums.RoleType;
-import com.kemiel.greenenergy.module.auth.entity.User;
+import com.kemiel.greenenergy.module.user.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

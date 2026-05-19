@@ -1,8 +1,8 @@
 package com.kemiel.greenenergy.config;
 
 import com.kemiel.greenenergy.common.enums.RoleType;
-import com.kemiel.greenenergy.module.auth.entity.User;
-import com.kemiel.greenenergy.module.auth.mapper.UserMapper;
+import com.kemiel.greenenergy.module.user.entity.User;
+import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

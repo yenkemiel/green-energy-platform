@@ -1,4 +1,4 @@
-package com.kemiel.greenenergy.module.auth.entity;
+package com.kemiel.greenenergy.module.user.entity;
 
 import com.kemiel.greenenergy.common.enums.RoleType;
 import lombok.Data;
