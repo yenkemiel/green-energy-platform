@@ -25,9 +25,20 @@
 
     <select id="selectByUsername" parameterType="string" resultMap="UserResultMap">
         SELECT id, username, password, display_name, role,
-        is_active, created_by, created_at, updated_at, is_deleted
+                is_active, created_by, created_at, updated_at, is_deleted
         FROM users
         WHERE username = #{username} AND is_deleted = 0
+    </select>
+
+    <select id="selectList" resultMap="UserResultMap">
+        SELECT id, username, display_name, role,
+                is_active, created_by, created_at, updated_at, is_deleted
+        FROM users
+        WHERE is_deleted = 0
+        <if test="role != null">
+            AND role = #{role}
+        </if>
+        ORDER BY created_at DESC
     </select>
 
     <insert id="insert" parameterType="com.kemiel.greenenergy.module.auth.entity.User"
@@ -41,6 +52,13 @@
         SET display_name = #{displayName},
             is_active    = #{isActive},
             updated_at   = NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+
+    <update id="updateStatusById">
+        UPDATE users
+        SET is_active  = #{isActive},
+            updated_at = NOW()
         WHERE id = #{id} AND is_deleted = 0
     </update>
 </mapper>
