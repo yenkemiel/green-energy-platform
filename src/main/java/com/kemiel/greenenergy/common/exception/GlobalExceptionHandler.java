@@ -69,7 +69,8 @@ public class GlobalExceptionHandler {
      */
     private HttpStatus resolveHttpStatus(ErrorCode errorCode){
         return switch (errorCode){
-            case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
+            case UNAUTHORIZED,
+                 INVALID_CREDENTIALS-> HttpStatus.UNAUTHORIZED;
             case FORBIDDEN -> HttpStatus.FORBIDDEN;
             case USER_NOT_FOUND,
                  CONTRACT_NOT_FOUND,
@@ -77,6 +78,7 @@ public class GlobalExceptionHandler {
                  SOLAR_DEVICE_NOT_FOUND,
                  TARGET_NOT_FOUND,
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case USERNAME_ALREADY_EXISTS -> HttpStatus.CONFLICT;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
