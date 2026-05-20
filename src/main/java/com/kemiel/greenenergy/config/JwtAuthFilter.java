@@ -37,14 +37,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (jwtUtil.isTokenValid(token)) {
                 Claims claims = jwtUtil.parseToken(token);
-                String userName = claims.getSubject();
+                Long userId = claims.get("userId", Long.class);
                 String role = claims.get("role", String.class);
 
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                var authentication = new UsernamePasswordAuthenticationToken(userName, null, authorities);
+                var authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                log.debug("JWT 驗證成功，username={}, role={}", userName, role);
+                log.debug("JWT 驗證成功，userId={}, role={}", userId, role);
             } else {
                 log.warn("JWT 驗證失敗，token 無效或過期");
             }
