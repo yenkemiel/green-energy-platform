@@ -3,11 +3,11 @@ spring:
     name: green-energy-platform
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/green_energy_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Taipei&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/green_energy_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jackson:
-    time-zone: Asia/Taipei
+    time-zone: UTC
     serialization:
       write-dates-as-timestamps: false
 
