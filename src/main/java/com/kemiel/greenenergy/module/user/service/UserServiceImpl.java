@@ -105,7 +105,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changeMyPassword(ChangePasswordRequest request, Long operatorId) {
         log.info("本人修改密碼，operatorId={}", operatorId);
-        findUserOrThrow(operatorId);
+        User user = findUserOrThrow(operatorId);
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.PASSWORD_SAME_AS_OLD);
+        }
         userMapper.updatePasswordById(operatorId, passwordEncoder.encode(request.getNewPassword()));
         log.info("密碼修改成功，userId={}", operatorId);
     }
