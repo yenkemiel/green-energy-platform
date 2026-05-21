@@ -4,10 +4,7 @@ import com.kemiel.greenenergy.common.enums.RoleType;
 import com.kemiel.greenenergy.common.response.ApiResponse;
 import com.kemiel.greenenergy.common.response.PageResult;
 import com.kemiel.greenenergy.common.util.SecurityUtils;
-import com.kemiel.greenenergy.module.user.dto.CreateUserRequest;
-import com.kemiel.greenenergy.module.user.dto.UpdateUserRequest;
-import com.kemiel.greenenergy.module.user.dto.UpdateUserStatusRequest;
-import com.kemiel.greenenergy.module.user.dto.UserResponse;
+import com.kemiel.greenenergy.module.user.dto.*;
 import com.kemiel.greenenergy.module.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 使用者管理 Controller，提供帳號 CRUD 與狀態管理
+ * 使用者管理 Controller，提供帳號 CRUD、狀態管理與密碼管理。
  */
 @RestController
 @RequestMapping("/api/v1/users")
@@ -74,4 +71,22 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    @PutMapping("/{id}/password")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "[FR-007] 重設使用者密碼")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.resetPassword(id, request);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @PutMapping("/me/password")
+    @Operation(summary = "[FR-008] 修改自己密碼")
+    public ResponseEntity<ApiResponse<Void>> changeMyPassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+        Long operatorId = SecurityUtils.getCurrentUserId();
+        userService.changeMyPassword(request, operatorId);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
 }
