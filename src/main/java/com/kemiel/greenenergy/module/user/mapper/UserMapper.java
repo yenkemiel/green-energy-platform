@@ -19,4 +19,5 @@ public interface UserMapper {
     void insert(User user);
     void updateById(User user);
     void updateStatusById(@Param("id") Long id, @Param("isActive") Boolean isActive);
+    void updatePasswordById(@Param("id") Long id, @Param("password") String password);
 }

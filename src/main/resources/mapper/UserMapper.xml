@@ -61,4 +61,11 @@
             updated_at = NOW()
         WHERE id = #{id} AND is_deleted = 0
     </update>
+
+    <update id="updatePasswordById">
+        UPDATE users
+        SET password  = #{password},
+            updated_at = NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
 </mapper>
