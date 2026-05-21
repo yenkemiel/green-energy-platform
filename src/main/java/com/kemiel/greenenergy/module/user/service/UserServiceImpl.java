@@ -6,10 +6,7 @@ import com.kemiel.greenenergy.common.enums.RoleType;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.response.PageResult;
-import com.kemiel.greenenergy.module.user.dto.CreateUserRequest;
-import com.kemiel.greenenergy.module.user.dto.UpdateUserRequest;
-import com.kemiel.greenenergy.module.user.dto.UpdateUserStatusRequest;
-import com.kemiel.greenenergy.module.user.dto.UserResponse;
+import com.kemiel.greenenergy.module.user.dto.*;
 import com.kemiel.greenenergy.module.user.entity.User;
 import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +86,28 @@ public class UserServiceImpl implements UserService {
         log.info("修改使用者啟用狀態，id={}, isActive={}", id, request.getIsActive());
         findUserOrThrow(id);
         userMapper.updateStatusById(id, request.getIsActive());
+    }
+
+    /**
+     * ADMIN 重設指定使用者密碼，用於使用者忘記密碼情境
+     */
+    @Override
+    public void resetPassword(Long id, ChangePasswordRequest request) {
+        log.info("ADMIN 重設密碼，targetId={}", id);
+        findUserOrThrow(id);
+        userMapper.updatePasswordById(id, passwordEncoder.encode(request.getNewPassword()));
+        log.info("重設密碼成功，userId={}", id);
+    }
+
+    /**
+     * 本人定期修改自己的密碼
+     */
+    @Override
+    public void changeMyPassword(ChangePasswordRequest request, Long operatorId) {
+        log.info("本人修改密碼，operatorId={}", operatorId);
+        findUserOrThrow(operatorId);
+        userMapper.updatePasswordById(operatorId, passwordEncoder.encode(request.getNewPassword()));
+        log.info("密碼修改成功，userId={}", operatorId);
     }
 
     private UserResponse toResponse(User user) {
