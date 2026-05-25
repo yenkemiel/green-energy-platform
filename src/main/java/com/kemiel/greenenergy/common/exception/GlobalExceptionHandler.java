@@ -78,7 +78,8 @@ public class GlobalExceptionHandler {
                  SOLAR_DEVICE_NOT_FOUND,
                  TARGET_NOT_FOUND,
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case USERNAME_ALREADY_EXISTS -> HttpStatus.CONFLICT;
+            case USERNAME_ALREADY_EXISTS,
+                 TARGET_YEAR_DUPLICATE-> HttpStatus.CONFLICT;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
