@@ -10,6 +10,13 @@
         WHERE id = #{id} AND is_deleted = 0
     </select>
 
+    <select id="selectByYear" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
+        SELECT id, target_year, annual_electricity_kwh, re100_target_ratio,
+        growth_rate, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM annual_targets
+        WHERE target_year = #{targetYear} AND is_deleted = 0
+    </select>
+
     <select id="selectList" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
         SELECT id, target_year, annual_electricity_kwh, re100_target_ratio,
         growth_rate, created_by, updated_by, created_at, updated_at, is_deleted

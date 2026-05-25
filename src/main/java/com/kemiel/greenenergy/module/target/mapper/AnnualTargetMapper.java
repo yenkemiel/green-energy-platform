@@ -12,6 +12,7 @@ import java.util.List;
 @Mapper
 public interface AnnualTargetMapper {
     AnnualTarget selectById(Long id);
+    AnnualTarget selectByYear(Integer targetYear);
     List<AnnualTarget> selectList(@Param("targetYear") Integer targetYear);
     void insert(AnnualTarget target);
     void updateById(AnnualTarget target);
