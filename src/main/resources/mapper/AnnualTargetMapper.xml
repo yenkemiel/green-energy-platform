@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.target.mapper.AnnualTargetMapper">
+
+    <select id="selectById" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
+        SELECT id, target_year, annual_electricity_kwh, re100_target_ratio,
+                growth_rate, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM annual_targets
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="selectByYear" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
+        SELECT id, target_year, annual_electricity_kwh, re100_target_ratio,
+        growth_rate, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM annual_targets
+        WHERE target_year = #{targetYear} AND is_deleted = 0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO annual_targets (
+            target_year, annual_electricity_kwh, re100_target_ratio,
+            growth_rate, created_by, updated_by, created_at, updated_at
+        ) VALUES (
+            #{targetYear}, #{annualElectricityKwh}, #{re100TargetRatio},
+            #{growthRate}, #{createdBy}, #{updatedBy}, NOW(), NOW()
+        )
+    </insert>
+
+    <update id="updateById" >
+        UPDATE annual_targets
+        SET annual_electricity_kwh = #{annualElectricityKwh},
+            re100_target_ratio = #{re100TargetRatio},
+            growth_rate = #{growthRate},
+            updated_by = #{updatedBy},
+            updated_at = NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+</mapper>
