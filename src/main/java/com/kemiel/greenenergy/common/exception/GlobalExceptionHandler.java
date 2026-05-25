@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
         log.error("ValidationException: {}", message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ErrorCode.VALIDATION_ERROR));
+                .body(ApiResponse.error(ErrorCode.VALIDATION_ERROR, message));
     }
 
     /**
