@@ -22,7 +22,7 @@
         growth_rate, created_by, updated_by, created_at, updated_at, is_deleted
         FROM annual_targets
         WHERE is_deleted = 0
-    <if test="year != null">
+    <if test="targetYear != null">
         AND target_year = #{targetYear}
     </if>
         ORDER BY target_year DESC
