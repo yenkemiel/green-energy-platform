@@ -52,6 +52,6 @@
         UPDATE annual_targets
         SET is_deleted = 1,
             updated_at = NOW()
-        WHERE id = #{id} AND is deleted = 0
+        WHERE id = #{id} AND is_deleted = 0
     </update>
 </mapper>
