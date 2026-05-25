@@ -10,11 +10,15 @@
         WHERE id = #{id} AND is_deleted = 0
     </select>
 
-    <select id="selectByYear" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
+    <select id="selectList" resultType="com.kemiel.greenenergy.module.target.entity.AnnualTarget">
         SELECT id, target_year, annual_electricity_kwh, re100_target_ratio,
         growth_rate, created_by, updated_by, created_at, updated_at, is_deleted
         FROM annual_targets
-        WHERE target_year = #{targetYear} AND is_deleted = 0
+        WHERE is_deleted = 0
+    <if test="year != null">
+        AND target_year = #{targetYear}
+    </if>
+        ORDER BY target_year DESC
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -35,5 +39,12 @@
             updated_by = #{updatedBy},
             updated_at = NOW()
         WHERE id = #{id} AND is_deleted = 0
+    </update>
+
+    <update id="deleteById">
+        UPDATE annual_targets
+        SET is_deleted = 1,
+            updated_at = NOW()
+        WHERE id = #{id} AND is deleted = 0
     </update>
 </mapper>
