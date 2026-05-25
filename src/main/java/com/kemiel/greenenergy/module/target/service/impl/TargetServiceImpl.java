@@ -64,7 +64,7 @@ public class TargetServiceImpl implements TargetService {
         target.setUpdatedBy(operatorId);
         annualTargetMapper.insert(target);
         log.info("年度目標建立完成，id={}", target.getId());
-        return toResponse(target);
+        return toResponse(annualTargetMapper.selectById(target.getId()));
     }
 
     /**
