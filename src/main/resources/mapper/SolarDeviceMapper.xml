@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.solar.mapper.SolarDeviceMapper">
+    <select id="selectById" resultType="com.kemiel.greenenergy.module.solar.entity.SolarDevice">
+        SELECT id, device_name, capacity_kw, install_date, location,
+                status, location_id, created_by, created_at, updated_at, is_deleted
+        FROM solar_devices
+        WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="selectList" resultType="com.kemiel.greenenergy.module.solar.entity.SolarDevice">
+        SELECT id, device_name, capacity_kw, install_date, location,
+        status, location_id, created_by, created_at, updated_at, is_deleted
+        FROM solar_devices
+        WHERE is_deleted = 0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO solar_devices (
+            device_name, capacity_kw, install_date, location,
+            status, created_by, created_at, updated_at
+        ) VALUES (
+            #{deviceName}, #{capacityKw}, #{installDate}, #{location},
+            'ACTIVE', #{createdBy}, NOW(), NOW()
+        )
+    </insert>
+
+    <update id="updateStatusById">
+        UPDATE solar_devices
+        SET status = #{status}, updated_at =NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+</mapper>
