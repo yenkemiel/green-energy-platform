@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.solar.mapper.SolarMonthlyRecordMapper">
+    <select id="selectListByDeviceIdAndYear" resultType="com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord">
+        SELECT id, device_id, record_year, record_month, actual_kwh, theoretical_kwh,
+                source, created_by, created_at, updated_at, is_deleted
+        FROM solar_monthly_records
+        WHERE device_id = #{deviceId}
+            AND record_year = #{year}
+            AND is_deleted =0
+        ORDER BY record_month ASC
+    </select>
+
+    <select id="selectByDeviceIdAndYearMonth" resultType="com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord">
+        SELECT id, device_id, record_year, record_month, actual_kwh, theoretical_kwh,
+        source, created_by, created_at, updated_at, is_deleted
+        FROM solar_monthly_records
+        WHERE device_id = #{deviceId}
+            AND record_year = #{year}
+            AND record_month = #{month}
+            AND is_deleted =0
+        LIMIT 1
+    </select>
+
+    <select id="selectById" resultType="com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord">
+        SELECT id, device_id, record_year, record_month, actual_kwh, theoretical_kwh,
+        source, created_by, created_at, updated_at, is_deleted
+        FROM solar_monthly_records
+        WHERE id = #{id}
+            AND is_deleted =0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO solar_monthly_records (
+            device_id, record_year, record_month, actual_kwh, theoretical_kwh,
+            source, created_by, created_at, updated_at, is_deleted
+        ) VALUES (
+        #{deviceId}, #{recordYear}, #{recordMonth}, #{actualKwh}, #{theoreticalKwh},
+        #{source}, #{createdBy}, NOW(), NOW(), 0
+        )
+    </insert>
+
+    <update id="updateById">
+        UPDATE solar_monthly_records
+        SET actual_kwh      =#{actualKwh},
+            theoretical_kwh =#{theoreticalKwh},
+            updated_at      =NOW()
+        WHERE id = #{id}
+            AND is_deleted = 0
+    </update>
+</mapper>
