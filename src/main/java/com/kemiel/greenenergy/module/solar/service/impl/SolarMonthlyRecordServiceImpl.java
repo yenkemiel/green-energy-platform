@@ -87,7 +87,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         record.setCreatedBy(operatorId);
 
         recordMapper.insert(record);
-        return toResponse(record);
+        return toResponse(recordMapper.selectById(record.getId()));
     }
 
     /**
