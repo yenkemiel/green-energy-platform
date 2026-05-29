@@ -76,6 +76,7 @@ public class GlobalExceptionHandler {
                  CONTRACT_NOT_FOUND,
                  PROCUREMENT_NOT_FOUND,
                  SOLAR_DEVICE_NOT_FOUND,
+                 SOLAR_RECORD_NOT_FOUND,
                  TARGET_NOT_FOUND,
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case USERNAME_ALREADY_EXISTS,
