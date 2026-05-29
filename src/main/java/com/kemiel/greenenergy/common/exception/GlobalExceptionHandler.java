@@ -82,7 +82,8 @@ public class GlobalExceptionHandler {
             case USERNAME_ALREADY_EXISTS,
                  TARGET_YEAR_DUPLICATE,
                  SOLAR_RECORD_DUPLICATE -> HttpStatus.CONFLICT;
-            case SOLAR_DEVICE_ALREADY_INACTIVE -> HttpStatus.UNPROCESSABLE_ENTITY;
+            case SOLAR_DEVICE_ALREADY_INACTIVE,
+                 ELECTRICITY_RECORD_EXPIRED -> HttpStatus.UNPROCESSABLE_ENTITY;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
