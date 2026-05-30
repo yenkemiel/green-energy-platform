@@ -9,7 +9,7 @@ import java.util.List;
 
 
 /**
- * 使用者帳號 Mapper 介面。
+ * 使用者帳號 Mapper
  */
 @Mapper
 public interface UserMapper {
