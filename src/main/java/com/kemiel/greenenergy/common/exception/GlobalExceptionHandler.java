@@ -81,9 +81,11 @@ public class GlobalExceptionHandler {
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case USERNAME_ALREADY_EXISTS,
                  TARGET_YEAR_DUPLICATE,
-                 SOLAR_RECORD_DUPLICATE -> HttpStatus.CONFLICT;
+                 SOLAR_RECORD_DUPLICATE,
+                 CONTRACT_OVERLAP -> HttpStatus.CONFLICT;
             case SOLAR_DEVICE_ALREADY_INACTIVE,
-                 ELECTRICITY_RECORD_EXPIRED -> HttpStatus.UNPROCESSABLE_ENTITY;
+                 ELECTRICITY_RECORD_EXPIRED,
+                 CONTRACT_NOT_ACTIVE -> HttpStatus.UNPROCESSABLE_ENTITY;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
