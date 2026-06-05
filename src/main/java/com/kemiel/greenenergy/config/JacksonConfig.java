@@ -1,5 +1,7 @@
 package com.kemiel.greenenergy.config;
 
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -27,6 +29,10 @@ public class JacksonConfig {
             builder.serializers(new LocalDateSerializer(
                     DateTimeFormatter.ofPattern(DATE_PATTERN)));
             builder.serializers(new LocalDateTimeSerializer(
+                    DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
+            builder.deserializers(new LocalDateDeserializer(
+                    DateTimeFormatter.ofPattern(DATE_PATTERN)));
+            builder.deserializers(new LocalDateTimeDeserializer(
                     DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)));
         };
     }
