@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 認證控制器，處理登入與登出請求。
  */
-@Tag(name = "認證", description = "登入、登出")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "認證", description = "登入、登出")
 public class AuthController {
 
     private final AuthService authService;
@@ -28,8 +28,8 @@ public class AuthController {
     /**
      * 使用者登入，驗證帳號密碼並回傳 JWT Token。
      */
-    @Operation(summary = "使用者登入")
     @PostMapping("/login")
+    @Operation(summary = "[FR-001] 使用者登入")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody @Valid LoginRequest request
             ){
@@ -39,8 +39,8 @@ public class AuthController {
     /**
      * 使用者登出，第一階段 stateless，由前端清除 Token。
      */
-    @Operation(summary = "使用者登出")
     @PostMapping("/logout")
+    @Operation(summary = "[FR-002] 使用者登出")
     public ResponseEntity<ApiResponse<Void>> logout() {
         return ResponseEntity.ok(ApiResponse.success());
     }

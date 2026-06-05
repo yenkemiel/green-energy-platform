@@ -7,6 +7,8 @@ import com.kemiel.greenenergy.module.solar.dto.CreateSolarDeviceRequest;
 import com.kemiel.greenenergy.module.solar.dto.SolarDeviceResponse;
 import com.kemiel.greenenergy.module.solar.dto.UpdateSolarDeviceStatusRequest;
 import com.kemiel.greenenergy.module.solar.service.SolarDeviceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,12 +22,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/solar-devices")
 @RequiredArgsConstructor
+@Tag(name = "Solar Devices", description = "太陽能設備管理模組")
 public class SolarDeviceController {
 
     private final SolarDeviceService solarDeviceService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
+    @Operation(summary = "[FR-013] 查詢太陽能設備清單")
     public ResponseEntity<ApiResponse<PageResult<SolarDeviceResponse>>> listDevices(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
@@ -36,12 +40,14 @@ public class SolarDeviceController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
+    @Operation(summary = "[FR-014] 查詢單一太陽能設備")
     public ResponseEntity<ApiResponse<SolarDeviceResponse>> getDeviceById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(solarDeviceService.getDeviceById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "[FR-015] 建立太陽能設備")
     public ResponseEntity<ApiResponse<SolarDeviceResponse>> createDevice(
             @RequestBody @Valid CreateSolarDeviceRequest request) {
         Long operatorId = SecurityUtils.getCurrentUserId();
@@ -51,6 +57,7 @@ public class SolarDeviceController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "[FR-016] 修改設備狀態")
     public ResponseEntity<ApiResponse<Void>> updateDeviceStatus(
             @PathVariable Long id,
             @RequestBody @Valid UpdateSolarDeviceStatusRequest request) {

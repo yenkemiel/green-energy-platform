@@ -6,6 +6,8 @@ import com.kemiel.greenenergy.module.solar.dto.CreateSolarMonthlyRecordRequest;
 import com.kemiel.greenenergy.module.solar.dto.SolarMonthlyRecordResponse;
 import com.kemiel.greenenergy.module.solar.dto.UpdateSolarMonthlyRecordRequest;
 import com.kemiel.greenenergy.module.solar.service.SolarMonthlyRecordService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,12 +23,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/solar-devices/{id}/monthly-records")
 @RequiredArgsConstructor
+@Tag(name = "Solar Monthly Records", description = "太陽能設備月發電紀錄模組")
 public class SolarMonthlyRecordController {
 
     private final SolarMonthlyRecordService solarMonthlyRecordService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
+    @Operation(summary = "[FR-017] 查詢月發電紀錄")
     public ResponseEntity<ApiResponse<List<SolarMonthlyRecordResponse>>> listRecords(
             @PathVariable Long id,
             @RequestParam Integer year) {
@@ -36,6 +40,7 @@ public class SolarMonthlyRecordController {
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "[FR-018] 新增月發電紀錄")
     public ResponseEntity<ApiResponse<SolarMonthlyRecordResponse>> createRecord(
             @PathVariable Long id,
             @RequestBody @Valid CreateSolarMonthlyRecordRequest request) {
@@ -47,6 +52,7 @@ public class SolarMonthlyRecordController {
 
     @PutMapping("/{recordId}")
     @PreAuthorize("hasRole('EMPLOYEE')")
+    @Operation(summary = "[FR-019] 修改月發電紀錄")
     public ResponseEntity<ApiResponse<SolarMonthlyRecordResponse>> updateRecord(
             @PathVariable Long id,
             @PathVariable Long recordId,
