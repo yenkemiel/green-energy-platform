@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 採購記錄，對應 procurements 資料表。
+ */
 @Data
 public class Procurement {
     private Long id;
