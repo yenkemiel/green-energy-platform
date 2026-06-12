@@ -47,6 +47,7 @@ public class SecurityConfig {
                                         "/api-docs/**",
                                         "/",
                                         "/login",
+                                        "/dashboard",
                                         "/users",
                                         "/contracts",
                                         "/solar-devices",
