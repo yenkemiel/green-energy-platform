@@ -44,7 +44,13 @@ public class SecurityConfig {
                                         "/api/v1/health",
                                         "/swagger-ui.html",
                                         "/swagger-ui/**",
-                                        "/api-docs/**"
+                                        "/api-docs/**",
+                                        "/",
+                                        "/login",
+                                        "/users",
+                                        "/contracts",
+                                        "/solar-devices",
+                                        "/targets"
                                 ).permitAll()
                                 .anyRequest().authenticated()
                 )
