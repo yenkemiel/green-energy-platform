@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>年度目標 - 綠電管理平台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #93bea1;
+            --green-dark: #5a8a6e;
+            --green-light: #e8f4ed;
+            --red: #cd6060;
+            --red-light: #fee2e2;
+            --border: #e4e4e0;
+            --text: #1a1a1a;
+            --text-muted: #888;
+            --bg: #f0f2f5;
+            --card: #fff;
+        }
+        body { font-family: sans-serif; background: var(--bg); display: flex; min-height: 100vh; font-size: 14px; }
+        .sidebar { width: 220px; background: var(--card); border-right: 1px solid var(--border); height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column; }
+        .logo { padding: 18px 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .logo-dot { width: 9px; height: 9px; background: var(--green); border-radius: 50%; }
+        .nav-section { padding: 12px 16px 4px; font-size: 10px; color: #bbb; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+        .nav-item { display: flex; align-items: center; padding: 9px 16px; font-size: 13px; color: #555; text-decoration: none; border-left: 3px solid transparent; transition: all .12s; }
+        .nav-item:hover { background: #f8f8f6; color: var(--text); }
+        .nav-item.active { background: var(--green-light); color: var(--green-dark); font-weight: 500; border-left-color: var(--green); }
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; }
+        .topbar-title { font-size: 15px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip { display: flex; align-items: center; gap: 8px; background: #f5f5f3; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .user-avatar { width: 22px; height: 22px; background: var(--green-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--green-dark); }
+        .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 5px; font-weight: 500; background: var(--green-light); color: var(--green-dark); }
+        .badge-manager { background: #ede9fe; color: #5b21b6; }
+        .badge-employee { background: var(--green-light); color: var(--green-dark); }
+        .logout-btn { background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; color: #555; }
+        .logout-btn:hover { background: #f5f5f3; }
+        .content { padding: 24px; flex: 1; }
+        .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+        .page-title { font-size: 18px; font-weight: 600; }
+        .page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+        td { padding: 11px 12px; border-bottom: 1px solid #f0f0ee; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafaf8; }
+        .btn { display: inline-flex; align-items: center; padding: 5px 12px; font-size: 12px; border-radius: 6px; cursor: pointer; border: 1px solid; font-weight: 500; background: none; transition: all .12s; }
+        .btn-primary { background: var(--green); border-color: var(--green); color: #fff; }
+        .btn-primary:hover { background: var(--green-dark); }
+        .btn-outline { border-color: var(--border); color: #555; }
+        .btn-outline:hover { background: #f5f5f3; }
+        .btn-danger { border-color: #fca5a5; color: var(--red); }
+        .btn-danger:hover { background: var(--red-light); }
+        .btn-gap { display: flex; gap: 6px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--card); border-radius: 10px; padding: 24px; width: 420px; max-width: 90vw; }
+        .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; }
+        .form-input:focus { outline: none; border-color: var(--green); }
+        .form-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
+        .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+        .error-msg { color: var(--red); font-size: 12px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo"><div class="logo-dot"></div>綠電管理平台</div>
+    <div class="nav-section">總覽</div>
+    <a class="nav-item" href="/dashboard">儀表板</a>
+    <div class="nav-section">資料管理</div>
+    <a class="nav-item" href="/solar-devices">太陽能設備</a>
+    <a class="nav-item" href="/contracts">合約管理</a>
+    <div class="nav-section">系統設定</div>
+    <a class="nav-item active" href="/targets">年度目標</a>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title">年度目標</div>
+        <div class="topbar-right">
+            <div class="user-chip">
+                <div class="user-avatar" id="userAvatar">-</div>
+                <span id="userName">載入中</span>
+                <span class="badge" id="userRole"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">登出</button>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="page-header">
+            <div>
+                <div class="page-title">年度目標設定</div>
+                <div class="page-sub">RE100 綠電目標管理</div>
+            </div>
+            <button class="btn btn-primary" id="createBtn" style="display:none" onclick="openCreateModal()">建立目標</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">目標清單</div>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>年度</th>
+                    <th>預估用電量</th>
+                    <th>RE100 目標</th>
+                    <th>需要綠電</th>
+                    <th>成長率</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="targetTable">
+                <tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px">載入中...</td></tr>
+                </tbody>
+            </table>
+            <div class="error-msg" id="listError"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 建立目標 Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <div class="modal-title">建立年度目標</div>
+        <div class="form-group">
+            <label class="form-label">年度</label>
+            <input class="form-input" type="number" id="createYear" placeholder="例：2026">
+        </div>
+        <div class="form-group">
+            <label class="form-label">預估年度總用電量（kWh）</label>
+            <input class="form-input" type="number" id="createKwh" placeholder="例：1200000">
+        </div>
+        <div class="form-group">
+            <label class="form-label">RE100 目標比例（0.0 ~ 1.0）</label>
+            <input class="form-input" type="number" step="0.01" id="createRatio" placeholder="例：0.5">
+            <div class="form-hint">0.5 代表目標 50% 綠電</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">預估用電成長率（0.0 ~ 1.0）</label>
+            <input class="form-input" type="number" step="0.01" id="createGrowth" placeholder="例：0.05">
+            <div class="form-hint">0.05 代表 5% 成長率</div>
+        </div>
+        <div class="error-msg" id="createError"></div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('createModal')">取消</button>
+            <button class="btn btn-primary" onclick="createTarget()">建立</button>
+        </div>
+    </div>
+</div>
+
+<!-- 修改目標 Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-title">修改年度目標</div>
+        <input type="hidden" id="editTargetId">
+        <div class="form-group">
+            <label class="form-label">預估年度總用電量（kWh）</label>
+            <input class="form-input" type="number" id="editKwh">
+        </div>
+        <div class="form-group">
+            <label class="form-label">RE100 目標比例（0.0 ~ 1.0）</label>
+            <input class="form-input" type="number" step="0.01" id="editRatio">
+        </div>
+        <div class="form-group">
+            <label class="form-label">預估用電成長率（0.0 ~ 1.0）</label>
+            <input class="form-input" type="number" step="0.01" id="editGrowth">
+        </div>
+        <div class="error-msg" id="editError"></div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('editModal')">取消</button>
+            <button class="btn btn-primary" onclick="updateTarget()">儲存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || !['MANAGER', 'EMPLOYEE'].includes(role)) window.location.href = '/login';
+
+    const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+    const roleBadgeClass = { 'MANAGER': 'badge-manager', 'EMPLOYEE': 'badge-employee' };
+
+    document.getElementById('userRole').textContent = role || '';
+    document.getElementById('userName').textContent = role === 'MANAGER' ? '企業管理者' : '員工';
+    document.getElementById('userAvatar').textContent = role ? role.charAt(0) : '-';
+    const badge = document.getElementById('userRole');
+    badge.className = 'badge ' + (roleBadgeClass[role] || '');
+
+    if (role === 'MANAGER') {
+        document.getElementById('createBtn').style.display = 'inline-flex';
+    }
+
+    async function loadTargets() {
+        try {
+            const res = await fetch('/api/v1/targets?page=0&size=20', { headers });
+            const data = await res.json();
+            if (data.success) {
+                const tbody = document.getElementById('targetTable');
+                if (data.data.content.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#bbb;padding:24px">尚無資料</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.data.content.map(t => {
+                    const requiredKwh = (t.annualElectricityKwh * t.re100TargetRatio).toLocaleString();
+                    return `
+                        <tr>
+                            <td><strong>${t.targetYear}</strong></td>
+                            <td>${Number(t.annualElectricityKwh).toLocaleString()} kWh</td>
+                            <td>${Math.round(t.re100TargetRatio * 100)}%</td>
+                            <td style="color:var(--green-dark);font-weight:500">${requiredKwh} kWh</td>
+                            <td>${Math.round(t.growthRate * 100)}%</td>
+                            <td>
+                                ${role === 'MANAGER' ? `
+                                <div class="btn-gap">
+                                    <button class="btn btn-outline" onclick="openEditModal(${t.id}, ${t.annualElectricityKwh}, ${t.re100TargetRatio}, ${t.growthRate})">修改</button>
+                                    <button class="btn btn-danger" onclick="deleteTarget(${t.id})">刪除</button>
+                                </div>` : '<span style="font-size:12px;color:#bbb">僅供查看</span>'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('listError').textContent = '載入失敗：' + data.message;
+            }
+        } catch (e) {
+            document.getElementById('listError').textContent = '連線失敗';
+        }
+    }
+
+    function openCreateModal() {
+        document.getElementById('createError').textContent = '';
+        document.getElementById('createYear').value = '';
+        document.getElementById('createKwh').value = '';
+        document.getElementById('createRatio').value = '';
+        document.getElementById('createGrowth').value = '';
+        document.getElementById('createModal').classList.add('show');
+    }
+
+    async function createTarget() {
+        const body = {
+            targetYear: parseInt(document.getElementById('createYear').value),
+            annualElectricityKwh: parseFloat(document.getElementById('createKwh').value),
+            re100TargetRatio: parseFloat(document.getElementById('createRatio').value),
+            growthRate: parseFloat(document.getElementById('createGrowth').value)
+        };
+        try {
+            const res = await fetch('/api/v1/targets', { method: 'POST', headers, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (data.success) {
+                closeModal('createModal');
+                loadTargets();
+            } else {
+                document.getElementById('createError').textContent = data.message || '建立失敗';
+            }
+        } catch (e) {
+            document.getElementById('createError').textContent = '連線失敗';
+        }
+    }
+
+    function openEditModal(id, kwh, ratio, growth) {
+        document.getElementById('editTargetId').value = id;
+        document.getElementById('editKwh').value = kwh;
+        document.getElementById('editRatio').value = ratio;
+        document.getElementById('editGrowth').value = growth;
+        document.getElementById('editError').textContent = '';
+        document.getElementById('editModal').classList.add('show');
+    }
+
+    async function updateTarget() {
+        const id = document.getElementById('editTargetId').value;
+        const body = {
+            annualElectricityKwh: parseFloat(document.getElementById('editKwh').value),
+            re100TargetRatio: parseFloat(document.getElementById('editRatio').value),
+            growthRate: parseFloat(document.getElementById('editGrowth').value)
+        };
+        try {
+            const res = await fetch('/api/v1/targets/' + id, { method: 'PUT', headers, body: JSON.stringify(body) });
+            const data = await res.json();
+            if (data.success) {
+                closeModal('editModal');
+                loadTargets();
+            } else {
+                document.getElementById('editError').textContent = data.message || '修改失敗';
+            }
+        } catch (e) {
+            document.getElementById('editError').textContent = '連線失敗';
+        }
+    }
+
+    async function deleteTarget(id) {
+        if (!confirm('確定要刪除這筆年度目標？')) return;
+        try {
+            const res = await fetch('/api/v1/targets/' + id, { method: 'DELETE', headers });
+            const data = await res.json();
+            if (data.success) loadTargets();
+        } catch (e) {}
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+
+    loadTargets();
+</script>
+</body>
+</html>

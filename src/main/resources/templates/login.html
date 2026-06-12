@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>登入 - 綠電管理平台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 360px;
+        }
+        h2 { text-align: center; margin-bottom: 6px; color: #333; font-size: 18px; }
+        .subtitle { text-align: center; font-size: 12px; color: #999; margin-bottom: 24px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #555; font-weight: 500; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input:focus { outline: none; border-color: #93bea1; }
+        button.login-btn {
+            width: 100%;
+            padding: 10px;
+            background: #93bea1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button.login-btn:hover { background: #a7c1af; }
+        .error {
+            color: #cd6060;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .divider {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+        .divider-label {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .quick-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .quick-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .quick-admin { border: 1px solid #fca5a5; background: #fff1f2; color: #881337; }
+        .quick-admin:hover { background: #ffe4e6; }
+        .quick-manager { border: 1px solid #c4b5fd; background: #ede9fe; color: #5b21b6; }
+        .quick-manager:hover { background: #e0d9fb; }
+        .quick-employee { border: 1px solid #a7c1af; background: #e8f4ed; color: #5a8a6e; }
+        .quick-employee:hover { background: #d8ecdf; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>綠電管理平台</h2>
+    <div class="subtitle">Green Energy Platform</div>
+    <label>帳號</label>
+    <input type="text" id="username" placeholder="請輸入帳號">
+    <label>密碼</label>
+    <input type="password" id="password" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter') login()">
+    <button class="login-btn" onclick="login()">登入</button>
+    <div class="error" id="error"></div>
+
+    <div class="divider">
+        <div class="divider-label">快速登入（展示用）</div>
+        <div class="quick-btns">
+            <button class="quick-btn quick-admin" onclick="quickLogin('admin', 'admin123')">ADMIN</button>
+            <button class="quick-btn quick-manager" onclick="quickLogin('manager01', 'newpassword123')">MANAGER</button>
+            <button class="quick-btn quick-employee" onclick="quickLogin('employee01', 'Employee@123')">EMPLOYEE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        await doLogin(username, password);
+    }
+
+    async function quickLogin(username, password) {
+        await doLogin(username, password);
+    }
+
+    async function doLogin(username, password) {
+        try {
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+            if (data.success) {
+                localStorage.setItem('token', data.data.token);
+                localStorage.setItem('role', data.data.role);
+                const role = data.data.role;
+                if (role === 'ADMIN') {
+                    window.location.href = '/users';
+                } else {
+                    window.location.href = '/dashboard';
+                }
+            } else {
+                document.getElementById('error').textContent = '帳號或密碼錯誤';
+            }
+        } catch (e) {
+            document.getElementById('error').textContent = '連線失敗，請稍後再試';
+        }
+    }
+</script>
+</body>
+</html>

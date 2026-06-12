@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>儀表板 - 綠電管理平台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #93bea1;
+            --green-dark: #5a8a6e;
+            --green-light: #e8f4ed;
+            --border: #e4e4e0;
+            --text: #1a1a1a;
+            --text-muted: #888;
+            --bg: #f0f2f5;
+            --card: #fff;
+        }
+        body { font-family: sans-serif; background: var(--bg); display: flex; min-height: 100vh; font-size: 14px; }
+
+        .sidebar {
+            width: 220px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .logo {
+            padding: 18px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-dot { width: 9px; height: 9px; background: var(--green); border-radius: 50%; }
+        .nav-section {
+            padding: 12px 16px 4px;
+            font-size: 10px;
+            color: #bbb;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 9px 16px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all .12s;
+        }
+        .nav-item:hover { background: #f8f8f6; color: var(--text); }
+        .nav-item.active {
+            background: var(--green-light);
+            color: var(--green-dark);
+            font-weight: 500;
+            border-left-color: var(--green);
+        }
+
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+        }
+        .topbar-title { font-size: 15px; font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f5f5f3;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .user-avatar {
+            width: 22px; height: 22px;
+            background: var(--green-light);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 600;
+            color: var(--green-dark);
+        }
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: 500;
+            background: var(--green-light);
+            color: var(--green-dark);
+        }
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #555;
+        }
+        .logout-btn:hover { background: #f5f5f3; }
+
+        .content { padding: 24px; flex: 1; }
+        .page-header { margin-bottom: 20px; }
+        .page-title { font-size: 18px; font-weight: 600; }
+        .page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+        .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+        .stat-value { font-size: 26px; font-weight: 600; color: var(--green-dark); line-height: 1; }
+        .stat-unit { font-size: 13px; font-weight: 400; color: var(--text-muted); margin-left: 3px; }
+        .stat-note { font-size: 11px; color: #bbb; margin-top: 6px; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+        }
+        .card-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-item {
+            padding: 11px 0;
+            border-bottom: 1px solid #f0f0ee;
+        }
+        .module-item:last-child { border-bottom: none; }
+        .module-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+        .module-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+        .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .tech-item {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .tech-category { font-size: 10px; color: #bbb; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+        .tech-name { font-weight: 500; color: var(--text); }
+
+        .role-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0ee;
+            font-size: 13px;
+        }
+        .role-item:last-child { border-bottom: none; }
+        .role-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .role-admin { background: #fff1f2; color: #881337; }
+        .role-manager { background: #ede9fe; color: #5b21b6; }
+        .role-employee { background: var(--green-light); color: var(--green-dark); }
+        .role-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo"><div class="logo-dot"></div>綠電管理平台</div>
+    <div class="nav-section">總覽</div>
+    <a class="nav-item active" href="/dashboard">儀表板</a>
+    <div class="nav-section">資料管理</div>
+    <a class="nav-item" href="/solar-devices">太陽能設備</a>
+    <a class="nav-item" href="/contracts">合約管理</a>
+    <div class="nav-section">系統設定</div>
+    <a class="nav-item" href="/targets">年度目標</a>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-title">儀表板</div>
+        <div class="topbar-right">
+            <div class="user-chip">
+                <div class="user-avatar" id="userAvatar">-</div>
+                <span id="userName">載入中</span>
+                <span class="badge" id="userRole"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">登出</button>
+        </div>
+    </header>
+
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">系統總覽</div>
+            <div class="page-sub">中小企業綠電管理平台 · 2026 年度</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">系統使用者</div>
+                <div class="stat-value" id="statUsers">-</div>
+                <div class="stat-note">ADMIN / MANAGER / EMPLOYEE</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">年度綠電目標</div>
+                <div class="stat-value" id="statTarget">-</div>
+                <div class="stat-note" id="statTargetNote">2026 年度</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">太陽能設備</div>
+                <div class="stat-value" id="statDevices">-</div>
+                <div class="stat-note">運作中設備</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">履約中合約</div>
+                <div class="stat-value" id="statContracts">-</div>
+                <div class="stat-note">CPPA / RETAIL</div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="card">
+                <div class="card-title">系統功能說明</div>
+                <div class="module-item">
+                    <div class="module-name">帳號與權限管理</div>
+                    <div class="module-desc">三種角色（ADMIN / MANAGER / EMPLOYEE），JWT 身份驗證，BCrypt 密碼加密，Spring Security 權限控管。</div>
+                </div>
+                <div class="module-item">
+                    <div class="module-name">年度目標設定</div>
+                    <div class="module-desc">MANAGER 設定年度 RE100 綠電目標比例與預估用電量，系統計算年度需求綠電量。</div>
+                </div>
+                <div class="module-item">
+                    <div class="module-name">太陽能設備管理</div>
+                    <div class="module-desc">管理企業太陽能設備清單，登記每月實際發電量，系統計算理論發電量與達標率。</div>
+                </div>
+                <div class="module-item">
+                    <div class="module-name">供電合約管理</div>
+                    <div class="module-desc">建立 CPPA 長約與售電業供電合約，管理合約狀態與費率，支援合約終止與到期追蹤。</div>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <div class="card">
+                    <div class="card-title">技術架構</div>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <div class="tech-category">後端框架</div>
+                            <div class="tech-name">Spring Boot 3.4.5</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-category">語言</div>
+                            <div class="tech-name">Java 21</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-category">持久層</div>
+                            <div class="tech-name">MyBatis + MySQL 8</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-category">驗證</div>
+                            <div class="tech-name">Spring Security + JWT</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-category">API 文件</div>
+                            <div class="tech-name">Swagger (springdoc)</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-category">容器化</div>
+                            <div class="tech-name">Docker + Railway</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">系統角色</div>
+                    <div class="role-item">
+                        <div style="width: 80px; flex-shrink: 0;">
+                            <span class="role-badge role-admin">ADMIN</span>
+                        </div>
+                        <div>
+                            <div class="module-name">系統管理者</div>
+                            <div class="role-desc">帳號建立與管理、角色指派、密碼重設，擁有最高系統權限。</div>
+                        </div>
+                    </div>
+                    <div class="role-item">
+                        <div style="width: 80px; flex-shrink: 0;">
+                            <span class="role-badge role-manager">MANAGER</span>
+                        </div>
+                        <div>
+                            <div class="module-name">企業管理者</div>
+                            <div class="role-desc">設定年度目標、審核採購、查看報表、執行月結鎖定。</div>
+                        </div>
+                    </div>
+                    <div class="role-item">
+                        <div style="width: 80px; flex-shrink: 0;">
+                            <span class="role-badge role-employee">EMPLOYEE</span>
+                        </div>
+                        <div>
+                            <div class="module-name">員工</div>
+                            <div class="role-desc">日常資料輸入，包含太陽能發電量、用電量、合約與採購建立。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token) window.location.href = '/login';
+
+    document.getElementById('userRole').textContent = role || '';
+    document.getElementById('userName').textContent =
+        role === 'ADMIN' ? '系統管理者' :
+            role === 'MANAGER' ? '企業管理者' : '員工';
+    document.getElementById('userAvatar').textContent = role ? role.charAt(0) : '-';
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    async function loadStats() {
+        try {
+            const [usersRes, targetsRes, devicesRes, contractsRes] = await Promise.all([
+                fetch('/api/v1/users?page=0&size=1', { headers }),
+                fetch('/api/v1/targets', { headers }),
+                fetch('/api/v1/solar-devices?page=0&size=1', { headers }),
+                fetch('/api/v1/contracts?page=0&size=1&status=ACTIVE', { headers })
+            ]);
+
+            const users = await usersRes.json();
+            const targets = await targetsRes.json();
+            const devices = await devicesRes.json();
+            const contracts = await contractsRes.json();
+
+            if (users.success) {
+                document.getElementById('statUsers').textContent = users.data.totalElements;
+            }
+
+            if (targets.success && targets.data.content.length > 0) {
+                const target = targets.data.content.find(t => t.targetYear === 2026) || targets.data.content[0];
+                const kwh = target.annualElectricityKwh;
+                document.getElementById('statTarget').innerHTML =
+                    Math.round(kwh / 1000).toLocaleString() + '<span class="stat-unit">千 kWh</span>';
+                document.getElementById('statTargetNote').textContent =
+                    target.targetYear + ' 年度 · RE100 ' + Math.round(target.re100TargetRatio * 100) + '%';
+            } else {
+                document.getElementById('statTarget').textContent = '未設定';
+            }
+
+            if (devices.success) {
+                document.getElementById('statDevices').textContent = devices.data.totalElements;
+            }
+
+            if (contracts.success) {
+                document.getElementById('statContracts').textContent = contracts.data.totalElements;
+            }
+
+        } catch (e) {
+            console.error('載入失敗', e);
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+
+    loadStats();
+</script>
+</body>
+</html>
