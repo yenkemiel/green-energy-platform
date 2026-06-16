@@ -22,5 +22,7 @@ public class UpdateTargetRequest {
     private BigDecimal re100TargetRatio;
 
     @NotNull(message = "用電成長率不可為空")
+    @DecimalMin(value = "0.0", message = "用電成長率不可小於 0")
+    @DecimalMax(value = "1.0", message = "用電成長率不可大於 1")
     private BigDecimal growthRate;
 }
