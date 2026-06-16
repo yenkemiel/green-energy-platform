@@ -12,6 +12,14 @@
         ORDER BY record_month ASC
     </select>
 
+    <select id="selectDistinctYears" resultType="java.lang.Integer">
+        SELECT DISTINCT record_year
+        FROM solar_monthly_records
+        WHERE device_id = #{deviceId}
+        AND is_deleted = 0
+        ORDER BY record_year DESC
+    </select>
+
     <select id="selectByDeviceIdAndYearMonth" resultType="com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord">
         SELECT id, device_id, record_year, record_month, actual_kwh, theoretical_kwh,
         source, created_by, created_at, updated_at, is_deleted

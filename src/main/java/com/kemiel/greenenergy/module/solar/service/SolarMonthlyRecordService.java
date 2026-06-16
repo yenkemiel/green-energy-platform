@@ -11,6 +11,7 @@ import java.util.List;
  */
 public interface SolarMonthlyRecordService {
     List<SolarMonthlyRecordResponse> listRecords(Long deviceId, Integer year);
+    List<Integer> listYears(Long deviceId);
     SolarMonthlyRecordResponse createRecord(Long deviceId,
                                             CreateSolarMonthlyRecordRequest request,
                                             Long operatorId);

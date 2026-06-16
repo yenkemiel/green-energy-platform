@@ -14,6 +14,7 @@ import java.util.List;
 public interface SolarMonthlyRecordMapper {
     List<SolarMonthlyRecord> selectListByDeviceIdAndYear(@Param("deviceId") Long deviceId,
                                                                  @Param("year") Integer year);
+    List<Integer> selectDistinctYears(@Param("deviceId") Long deviceId);
     SolarMonthlyRecord selectByDeviceIdAndYearMonth(@Param("deviceId") Long deviceId,
                                                                 @Param("year") Integer year, @Param("month") Integer month);
     SolarMonthlyRecord selectById(Long id);
