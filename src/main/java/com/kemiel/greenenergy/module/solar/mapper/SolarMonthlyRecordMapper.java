@@ -16,6 +16,7 @@ public interface SolarMonthlyRecordMapper {
                                                                  @Param("year") Integer year);
     SolarMonthlyRecord selectByDeviceIdAndYearMonth(@Param("deviceId") Long deviceId,
                                                                 @Param("year") Integer year, @Param("month") Integer month);
+    List<Integer> selectDistinctYears(@Param("deviceId") Long deviceId);
     SolarMonthlyRecord selectById(Long id);
     void insert(SolarMonthlyRecord record);
     void updateById(SolarMonthlyRecord record);

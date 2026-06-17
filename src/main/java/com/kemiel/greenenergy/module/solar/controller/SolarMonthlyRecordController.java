@@ -38,6 +38,15 @@ public class SolarMonthlyRecordController {
                 solarMonthlyRecordService.listRecords(id, year)));
     }
 
+    @GetMapping("/years")
+    @PreAuthorize("hasAnyRole('MANAGER', 'EMPLOYEE')")
+    @Operation(summary = "[FR-017-1] 查詢設備有記錄的年份列表")
+    public ResponseEntity<ApiResponse<List<Integer>>> listYears(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(
+                solarMonthlyRecordService.listYears(id)));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     @Operation(summary = "[FR-018] 新增月發電紀錄")

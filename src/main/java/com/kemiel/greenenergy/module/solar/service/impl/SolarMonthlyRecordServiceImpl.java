@@ -49,6 +49,19 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     }
 
     /**
+     * 查詢指定設備有月發電紀錄的所有年份
+     */
+    @Override
+    public List<Integer> listYears(Long deviceId) {
+        log.info("查詢設備有記錄的年份列表，deviceId={}", deviceId);
+        SolarDevice device = deviceMapper.selectById(deviceId);
+        if (device == null) {
+            throw new BusinessException(ErrorCode.SOLAR_DEVICE_NOT_FOUND);
+        }
+        return recordMapper.selectDistinctYears(deviceId);
+    }
+
+    /**
      * 新增月發電紀錄，並計算理論發電量快照
      *
      * @param operatorId 當前操作者 userId
