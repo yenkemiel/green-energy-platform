@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper">
+    <select id="selectList" resultType="com.kemiel.greenenergy.module.procurement.entity.Procurement">
+        SELECT
+            id, supplier_name, quantity, kwh_equivalent, certificate_year,
+            unit_price, total_amount, status, expected_date, completed_date,
+            purchase_month, expiry_date, is_void, notes, supply_type,
+            location_id, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM procurements
+        WHERE is_deleted = 0
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="isVoid != null">
+            AND is_void =#{isVoid}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" resultType="com.kemiel.greenenergy.module.procurement.entity.Procurement">
+        SELECT
+            id, supplier_name, quantity, kwh_equivalent, certificate_year,
+            unit_price, total_amount, status, expected_date, completed_date,
+            purchase_month, expiry_date, is_void, notes, supply_type,
+            location_id, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM procurements
+        WHERE id = #{id}
+            AND is_deleted = 0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO procurements(
+            supplier_name, quantity, kwh_equivalent, certificate_year,
+            unit_price, total_amount, status, expected_date, notes,
+            supply_type, created_by, updated_by, created_at, updated_at, is_deleted
+        ) VALUES (
+            #{supplierName}, #{quantity}, #{kwhEquivalent}, #{certificateYear},
+            #{unitPrice}, #{totalAmount}, #{status}, #{expectedDate}, #{notes},
+            #{supplyType}, #{createdBy}, #{updatedBy}, NOW(), NOW(), 0
+        )
+    </insert>
+
+    <update id="updateById">
+        UPDATE procurements
+        SET supplier_name    = #{supplierName},
+            quantity         = #{quantity},
+            kwh_equivalent   = #{kwhEquivalent},
+            certificate_year = #{certificateYear},
+            unit_price       = #{unitPrice},
+            total_amount     = #{totalAmount},
+            status           = #{status},
+            expected_date    = #{expectedDate},
+            completed_date   = #{completedDate},
+            purchase_month   = #{purchaseMonth},
+            expiry_date      = #{expiryDate},
+            is_void          = #{isVoid},
+            notes            = #{notes},
+            updated_by       = #{updatedBy},
+            updated_at       = NOW()
+        WHERE id = #{id}
+            AND is_deleted = 0
+    </update>
+
+    <update id="updateStatusById">
+        UPDATE procurements
+        SET status = #{status},
+            updated_by = #{updatedBy},
+            updated_at = NOW()
+        WHERE id = #{id}
+            AND is_deleted  = 0
+    </update>
+
+    <select id="selectSummaryStats" resultType="com.kemiel.greenenergy.module.procurement.dto.ProcurementSummaryStats">
+        SELECT
+            COALESCE(SUM(quantity),0) AS total_quantity,
+            COALESCE(SUM(CASE WHEN expiry_date &lt;= #{deadline} THEN quantity ELSE 0 END),0) AS expiring_within30_days
+        FROM procurements
+        WHERE status = 'COMPLETED'
+            AND is_void = 0
+            AND is_deleted = 0
+    </select>
+</mapper>
