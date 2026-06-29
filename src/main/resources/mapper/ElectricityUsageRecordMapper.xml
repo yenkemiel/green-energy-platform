@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper">
+
+    <select id="selectListByYear" resultType="com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord">
+        SELECT
+        id, record_year, record_month, usage_kwh, status,
+        locked_at, locked_by, location_id,
+        created_by, updated_by, created_at, updated_at, is_deleted
+        FROM electricity_usage_records
+        WHERE is_deleted = 0
+        <if test="recordYear != null">
+            AND record_year = #{recordYear}
+        </if>
+        ORDER BY record_month ASC
+    </select>
+
+    <select id="selectById" resultType="com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord">
+        SELECT
+        id, record_year, record_month, usage_kwh, status,
+        locked_at, locked_by, location_id,
+        created_by, updated_by, created_at, updated_at, is_deleted
+        FROM electricity_usage_records
+        WHERE id = #{id}
+        AND is_deleted = 0
+    </select>
+
+    <select id="selectByYearAndMonth" resultType="com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord">
+        SELECT
+        id, record_year, record_month, usage_kwh, status,
+        locked_at, locked_by, location_id,
+        created_by, updated_by, created_at, updated_at, is_deleted
+        FROM electricity_usage_records
+        WHERE record_year = #{recordYear}
+        AND record_month = #{recordMonth}
+        AND is_deleted = 0
+        LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO electricity_usage_records (
+        record_year, record_month, usage_kwh, status,
+        created_by, updated_by, created_at, updated_at, is_deleted
+        ) VALUES (
+        #{recordYear}, #{recordMonth}, #{usageKwh}, #{status},
+        #{createdBy}, #{updatedBy}, NOW(), NOW(), 0
+        )
+    </insert>
+
+    <update id="updateById">
+        UPDATE electricity_usage_records
+        SET usage_kwh  = #{usageKwh},
+        updated_by = #{updatedBy},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND is_deleted = 0
+    </update>
+
+    <update id="updateLockById">
+        UPDATE electricity_usage_records
+        SET status     = #{status},
+        locked_at  = #{lockedAt},
+        locked_by  = #{lockedBy},
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND is_deleted = 0
+    </update>
+
+</mapper>
