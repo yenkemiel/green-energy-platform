@@ -79,15 +79,20 @@ public class GlobalExceptionHandler {
                  CONTRACT_NOT_FOUND,
                  PROCUREMENT_NOT_FOUND,
                  PROCUREMENT_PRESET_NOT_FOUND,
+                 ELECTRICITY_RECORD_NOT_FOUND,
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case USERNAME_ALREADY_EXISTS,
                  TARGET_YEAR_DUPLICATE,
                  SOLAR_RECORD_DUPLICATE,
-                 CONTRACT_OVERLAP -> HttpStatus.CONFLICT;
+                 CONTRACT_OVERLAP,
+                 ELECTRICITY_RECORD_DUPLICATE -> HttpStatus.CONFLICT;
             case SOLAR_DEVICE_ALREADY_INACTIVE,
-                 ELECTRICITY_RECORD_EXPIRED,
                  CONTRACT_NOT_ACTIVE,
-                 PROCUREMENT_STATUS_INVALID-> HttpStatus.UNPROCESSABLE_ENTITY;
+                 PROCUREMENT_STATUS_INVALID,
+                 ELECTRICITY_RECORD_LOCKED,
+                 ELECTRICITY_RECORD_EXPIRED,
+                 MONTH_NOT_COMPLETE,
+                 MONTH_ALREADY_LOCKED -> HttpStatus.UNPROCESSABLE_ENTITY;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
