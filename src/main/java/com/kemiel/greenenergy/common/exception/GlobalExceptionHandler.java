@@ -73,11 +73,12 @@ public class GlobalExceptionHandler {
                  INVALID_CREDENTIALS-> HttpStatus.UNAUTHORIZED;
             case FORBIDDEN -> HttpStatus.FORBIDDEN;
             case USER_NOT_FOUND,
-                 CONTRACT_NOT_FOUND,
-                 PROCUREMENT_NOT_FOUND,
                  SOLAR_DEVICE_NOT_FOUND,
                  SOLAR_RECORD_NOT_FOUND,
                  TARGET_NOT_FOUND,
+                 CONTRACT_NOT_FOUND,
+                 PROCUREMENT_NOT_FOUND,
+                 PROCUREMENT_PRESET_NOT_FOUND,
                  NOTIFICATION_NOT_FOUND -> HttpStatus.NOT_FOUND;
             case USERNAME_ALREADY_EXISTS,
                  TARGET_YEAR_DUPLICATE,
