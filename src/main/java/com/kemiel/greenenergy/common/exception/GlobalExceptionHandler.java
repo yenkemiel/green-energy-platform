@@ -85,7 +85,8 @@ public class GlobalExceptionHandler {
                  CONTRACT_OVERLAP -> HttpStatus.CONFLICT;
             case SOLAR_DEVICE_ALREADY_INACTIVE,
                  ELECTRICITY_RECORD_EXPIRED,
-                 CONTRACT_NOT_ACTIVE -> HttpStatus.UNPROCESSABLE_ENTITY;
+                 CONTRACT_NOT_ACTIVE,
+                 PROCUREMENT_STATUS_INVALID-> HttpStatus.UNPROCESSABLE_ENTITY;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
