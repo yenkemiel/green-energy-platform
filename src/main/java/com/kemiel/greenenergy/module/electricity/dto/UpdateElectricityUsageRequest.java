@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 /**
- * 修改每月用電量請求 DTO。
+ * 修改每月用電量請求 DTO
  */
 @Getter
 public class UpdateElectricityUsageRequest {
