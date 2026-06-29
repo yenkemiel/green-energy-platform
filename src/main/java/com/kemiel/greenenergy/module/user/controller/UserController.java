@@ -16,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 使用者管理 Controller，提供帳號 CRUD、狀態管理與密碼管理。
+ * 使用者管理 Controller，提供帳號 CRUD、狀態管理與密碼管理
  */
 @RestController
 @RequestMapping("/api/v1/users")

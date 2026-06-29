@@ -17,7 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 年度目標 Controller，處理 FR-009 ~ FR-012。
+ * 年度目標 Controller
  */
 @RestController
 @RequestMapping("/api/v1/targets")

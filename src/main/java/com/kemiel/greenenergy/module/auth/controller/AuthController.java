@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 認證控制器，處理登入與登出請求。
+ * 認證控制器，處理登入與登出請求
  */
 @RestController
 @RequestMapping("/api/v1/auth")
