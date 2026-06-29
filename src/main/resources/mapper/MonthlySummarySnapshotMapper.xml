@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper">
+
+    <select id="selectByYearAndMonth"
+            resultType="com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot">
+        SELECT
+        id, record_year, record_month,
+        total_green_kwh, solar_kwh, contract_kwh, procurement_kwh,
+        usage_kwh, achievement_rate, surplus_kwh,
+        locked_by, locked_at, created_at
+        FROM monthly_summary_snapshots
+        WHERE record_year = #{recordYear}
+        AND record_month = #{recordMonth}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO monthly_summary_snapshots (
+        record_year, record_month,
+        total_green_kwh, solar_kwh, contract_kwh, procurement_kwh,
+        usage_kwh, achievement_rate, surplus_kwh,
+        locked_by, locked_at, created_at
+        ) VALUES (
+        #{recordYear}, #{recordMonth},
+        #{totalGreenKwh}, #{solarKwh}, #{contractKwh}, #{procurementKwh},
+        #{usageKwh}, #{achievementRate}, #{surplusKwh},
+        #{lockedBy}, #{lockedAt}, NOW()
+        )
+    </insert>
+
+</mapper>
