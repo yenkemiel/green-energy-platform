@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 
 /**
- * 完成採購請求 DTO。
+ * 完成採購請求 DTO
  */
 @Getter
 public class CompleteProcurementRequest {

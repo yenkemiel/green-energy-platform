@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 /**
- * 終止合約的請求格式。
+ * 終止合約的請求格式
  */
 @Getter
 public class TerminateContractRequest {

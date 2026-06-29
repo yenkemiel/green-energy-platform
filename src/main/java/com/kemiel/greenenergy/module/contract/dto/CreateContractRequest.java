@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 建立合約的請求格式。
+ * 建立合約的請求格式
  */
 @Getter
 public class CreateContractRequest {

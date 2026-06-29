@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 採購記錄回應 DTO。
+ * 採購記錄回應 DTO
  */
 @Getter
 @Builder

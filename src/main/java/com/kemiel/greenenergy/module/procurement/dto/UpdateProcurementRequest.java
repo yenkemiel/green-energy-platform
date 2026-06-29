@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 修改採購請求 DTO。
+ * 修改採購請求 DTO
  */
 @Getter
 public class UpdateProcurementRequest {

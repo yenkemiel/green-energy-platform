@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 修改合約的請求格式（費率不可修改）。
+ * 修改合約的請求格式（費率不可修改）
  */
 @Getter
 public class UpdateContractRequest {

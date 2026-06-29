@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * 採購憑證庫存總覽回傳格式。
+ * 採購憑證庫存總覽回傳格式
  */
 @Getter
 @Builder

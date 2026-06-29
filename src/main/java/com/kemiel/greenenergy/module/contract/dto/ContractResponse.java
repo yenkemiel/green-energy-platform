@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 合約清單與單筆查詢的回傳格式。
+ * 合約清單與單筆查詢的回傳格式
  */
 @Getter
 @Builder
