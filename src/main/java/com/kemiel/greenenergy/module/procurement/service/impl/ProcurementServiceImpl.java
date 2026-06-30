@@ -2,14 +2,18 @@ package com.kemiel.greenenergy.module.procurement.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.kemiel.greenenergy.common.enums.AuditAction;
 import com.kemiel.greenenergy.common.enums.ProcurementStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
+import com.kemiel.greenenergy.common.helper.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
 import com.kemiel.greenenergy.module.procurement.dto.*;
 import com.kemiel.greenenergy.module.procurement.entity.Procurement;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
 import com.kemiel.greenenergy.module.procurement.service.ProcurementService;
+import com.kemiel.greenenergy.module.user.entity.User;
+import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,8 @@ import java.util.stream.Collectors;
 public class ProcurementServiceImpl implements ProcurementService {
 
     private final ProcurementMapper procurementMapper;
+    private final AuditLogHelper auditLogHelper;
+    private final UserMapper userMapper;
 
     /**
      * 查詢採購清單（支援分頁、狀態與作廢篩選）
@@ -139,6 +145,13 @@ public class ProcurementServiceImpl implements ProcurementService {
         }
 
         procurementMapper.updateStatusById(id, ProcurementStatus.SUBMITTED.name(), operatorId);
+
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.STATUS_CHANGE.name(), "procurements", id,
+                String.format("{\"status\": \"%s\"}", procurement.getStatus()),
+                String.format("{\"status\": \"%s\"}", ProcurementStatus.SUBMITTED.name()),
+                operatorId, operator.getDisplayName());
     }
 
     /**
@@ -158,6 +171,13 @@ public class ProcurementServiceImpl implements ProcurementService {
         }
 
         procurementMapper.updateStatusById(id, ProcurementStatus.CANCELLED.name(), operatorId);
+
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.STATUS_CHANGE.name(), "procurements", id,
+                String.format("{\"status\": \"%s\"}", status),
+                String.format("{\"status\": \"%s\"}", ProcurementStatus.CANCELLED.name()),
+                operatorId, operator.getDisplayName());
     }
 
     /**
@@ -176,6 +196,13 @@ public class ProcurementServiceImpl implements ProcurementService {
         }
 
         procurementMapper.updateStatusById(id, ProcurementStatus.APPROVED.name(), operatorId);
+
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.STATUS_CHANGE.name(), "procurements", id,
+                String.format("{\"status\": \"%s\"}", procurement.getStatus()),
+                String.format("{\"status\": \"%s\"}", ProcurementStatus.APPROVED.name()),
+                operatorId, operator.getDisplayName());
     }
 
     /**
@@ -194,6 +221,13 @@ public class ProcurementServiceImpl implements ProcurementService {
         }
 
         procurementMapper.updateStatusById(id, ProcurementStatus.IN_PROGRESS.name(), operatorId);
+
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.STATUS_CHANGE.name(), "procurements", id,
+                String.format("{\"status\": \"%s\"}", procurement.getStatus()),
+                String.format("{\"status\": \"%s\"}", ProcurementStatus.IN_PROGRESS.name()),
+                operatorId, operator.getDisplayName());
     }
 
     /**
@@ -215,6 +249,8 @@ public class ProcurementServiceImpl implements ProcurementService {
         String purchaseMonth = YearMonth.from(completedDate).toString();
         LocalDate expiryDate = completedDate.plusYears(2);
 
+        String oldStatus = procurement.getStatus();
+
         procurement.setStatus(ProcurementStatus.COMPLETED.name());
         procurement.setCompletedDate(completedDate);
         procurement.setPurchaseMonth(purchaseMonth);
@@ -222,6 +258,13 @@ public class ProcurementServiceImpl implements ProcurementService {
         procurement.setUpdatedBy(operatorId);
 
         procurementMapper.updateById(procurement);
+
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.STATUS_CHANGE.name(), "procurements", id,
+                String.format("{\"status\": \"%s\"}", oldStatus),
+                String.format("{\"status\": \"%s\"}", ProcurementStatus.COMPLETED.name()),
+                operatorId, operator.getDisplayName());
     }
 
     /**
@@ -239,10 +282,22 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
+        String oldStatus = procurement.getStatus();
+        Integer oldIsVoid = procurement.getIsVoid();
+
         procurement.setStatus(ProcurementStatus.VOID.name());
         procurement.setIsVoid(1);
         procurement.setUpdatedBy(operatorId);
         procurementMapper.updateById(procurement);
+
+        User operator = userMapper.selectById(operatorId);
+        String voidBeforeValue = String.format(
+                "{\"status\": \"%s\", \"isVoid\": \"%s\"}", oldStatus, oldIsVoid);
+        String voidAfterValue = String.format(
+                "{\"status\": \"%s\", \"isVoid\": \"1\"}", ProcurementStatus.VOID.name());
+        auditLogHelper.log(
+                AuditAction.VOID.name(), "procurements", id,
+                voidBeforeValue, voidAfterValue, operatorId, operator.getDisplayName());
     }
 
     /**
