@@ -35,4 +35,7 @@ public interface ProcurementMapper {
 
     List<ProcurementKwhBySupplyType> selectSumKwhGroupBySupplyType(@Param("year") Integer year,
                                                                    @Param("month") Integer month);
+
+    int countInProgress();
+
 }

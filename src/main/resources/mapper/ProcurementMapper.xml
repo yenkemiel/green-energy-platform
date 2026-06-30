@@ -106,4 +106,12 @@
         GROUP BY supply_type
     </select>
 
+    <select id="countInProgress" resultType="int">
+        SELECT COUNT(*)
+        FROM procurements
+        WHERE status = 'IN_PROGRESS'
+        AND is_void = 0
+        AND is_deleted = 0
+    </select>
+
 </mapper>

@@ -1,5 +1,6 @@
 package com.kemiel.greenenergy.module.contract.mapper;
 
+import com.kemiel.greenenergy.module.contract.dto.ContractActiveStats;
 import com.kemiel.greenenergy.module.contract.dto.ContractKwhByType;
 import com.kemiel.greenenergy.module.contract.entity.Contract;
 import org.apache.ibatis.annotations.Mapper;
@@ -40,5 +41,9 @@ public interface ContractMapper {
 
     List<ContractKwhByType> selectSumKwhGroupByType(@Param("firstDay") LocalDate firstDay,
                                                     @Param("lastDay") LocalDate lastDay);
+
+    ContractActiveStats selectActiveContractStats();
+
+    List<Contract> selectExpiringContracts(@Param("thresholdDate") LocalDate thresholdDate);
 
 }

@@ -101,5 +101,27 @@
         AND is_deleted = 0
         GROUP BY contract_type
     </select>
+    <select id="selectActiveContractStats"
+            resultType="com.kemiel.greenenergy.module.contract.dto.ContractActiveStats">
+        SELECT
+        COUNT(*) AS activeContracts,
+        COALESCE(SUM(monthly_supply_kwh), 0) AS monthlyGuaranteedKwh
+        FROM contracts
+        WHERE status = 'ACTIVE'
+        AND is_deleted = 0
+    </select>
+
+    <select id="selectExpiringContracts"
+            resultType="com.kemiel.greenenergy.module.contract.entity.Contract">
+        SELECT
+        id, supplier_name, contract_type, start_date, end_date,
+        monthly_supply_kwh, rate_per_kwh, total_amount, status,
+        location_id, created_by, updated_by, created_at, updated_at, is_deleted
+        FROM contracts
+        WHERE status = 'ACTIVE'
+        AND end_date &lt;= #{thresholdDate}
+        AND is_deleted = 0
+        ORDER BY end_date ASC
+    </select>
 
 </mapper>
