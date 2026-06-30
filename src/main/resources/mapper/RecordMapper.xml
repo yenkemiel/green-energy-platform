@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.record.mapper.RecordMapper">
+
+    <select id="selectList"
+            resultType="com.kemiel.greenenergy.module.record.dto.RecordItemResponse">
+        SELECT
+        combined.recordType         AS recordType,
+        combined.id                 AS id,
+        combined.title              AS title,
+        combined.status             AS status,
+        combined.contractType       AS contractType,
+        combined.monthlySupplyKwh   AS monthlySupplyKwh,
+        combined.startDate          AS startDate,
+        combined.endDate            AS endDate,
+        combined.quantity           AS quantity,
+        combined.kwhEquivalent      AS kwhEquivalent,
+        combined.completedDate      AS completedDate,
+        combined.totalAmount        AS totalAmount,
+        combined.supplyType         AS supplyType,
+        combined.eventDate          AS eventDate,
+        combined.createdBy          AS createdBy
+        FROM (
+        SELECT
+        'CONTRACT'              AS recordType,
+        c.id                    AS id,
+        c.supplier_name         AS title,
+        c.status                AS status,
+        c.contract_type         AS contractType,
+        c.monthly_supply_kwh    AS monthlySupplyKwh,
+        c.start_date            AS startDate,
+        c.end_date              AS endDate,
+        NULL                    AS quantity,
+        NULL                    AS kwhEquivalent,
+        NULL                    AS completedDate,
+        NULL                    AS totalAmount,
+        NULL                    AS supplyType,
+        c.created_at            AS eventDate,
+        c.created_by            AS createdBy
+        FROM contracts c
+        WHERE c.is_deleted = 0
+        <if test="status != null and type != 'PROCUREMENT'">
+            AND c.status = #{status}
+        </if>
+        <if test="startDate != null">
+            AND c.created_at &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND c.created_at &lt;= #{endDate}
+        </if>
+
+        UNION ALL
+
+        SELECT
+        'PROCUREMENT'           AS recordType,
+        p.id                    AS id,
+        p.supplier_name         AS title,
+        p.status                AS status,
+        NULL                    AS contractType,
+        NULL                    AS monthlySupplyKwh,
+        NULL                    AS startDate,
+        p.completed_date        AS endDate,
+        p.quantity              AS quantity,
+        p.kwh_equivalent        AS kwhEquivalent,
+        p.completed_date        AS completedDate,
+        p.total_amount          AS totalAmount,
+        p.supply_type           AS supplyType,
+        COALESCE(p.completed_date, p.created_at) AS eventDate,
+        p.created_by            AS createdBy
+        FROM procurements p
+        WHERE p.is_deleted = 0
+        <if test="status != null and type != 'CONTRACT'">
+            AND p.status = #{status}
+        </if>
+        <if test="supplyType != null">
+            AND p.supply_type = #{supplyType}
+        </if>
+        <if test="startDate != null">
+            AND COALESCE(p.completed_date, p.created_at) &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND COALESCE(p.completed_date, p.created_at) &lt;= #{endDate}
+        </if>
+        ) AS combined
+        <where>
+            <if test="type == 'CONTRACT'">
+                combined.recordType = 'CONTRACT'
+            </if>
+            <if test="type == 'PROCUREMENT'">
+                combined.recordType = 'PROCUREMENT'
+            </if>
+        </where>
+        ORDER BY combined.eventDate DESC
+    </select>
+
+</mapper>
