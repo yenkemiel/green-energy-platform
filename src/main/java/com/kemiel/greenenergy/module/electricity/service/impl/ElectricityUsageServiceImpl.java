@@ -9,6 +9,7 @@ import com.kemiel.greenenergy.module.electricity.dto.UpdateElectricityUsageReque
 import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
 import com.kemiel.greenenergy.module.electricity.service.ElectricityUsageService;
+import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 public class ElectricityUsageServiceImpl implements ElectricityUsageService {
 
     private final ElectricityUsageRecordMapper electricityUsageRecordMapper;
+    private final GreenEnergyCalculationService greenEnergyCalculationService;
 
     /**
      * 查詢指定年度的所有用電量記錄
@@ -118,6 +120,9 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
                 operatorId,
                 ElectricityRecordStatus.LOCKED.name()
         );
+
+        greenEnergyCalculationService.writeMonthlySummarySnapshot(
+                record.getRecordYear(), record.getRecordMonth(), operatorId);
 
         log.info("月份鎖定成功，id={}", id);
     }
