@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.notification.mapper.NotificationMapper">
+
+    <select id="selectList"
+            resultType="com.kemiel.greenenergy.module.notification.entity.Notification">
+        SELECT
+        id, type, title, message, recipient_id, is_read,
+        ref_id, ref_type, created_at, updated_at, is_deleted
+        FROM notifications
+        WHERE recipient_id = #{recipientId}
+        AND is_deleted = 0
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="isRead != null">
+            AND is_read = #{isRead}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById"
+            resultType="com.kemiel.greenenergy.module.notification.entity.Notification">
+        SELECT
+        id, type, title, message, recipient_id, is_read,
+        ref_id, ref_type, created_at, updated_at, is_deleted
+        FROM notifications
+        WHERE id = #{id}
+        AND is_deleted = 0
+    </select>
+
+    <select id="countUnread" resultType="long">
+        SELECT COUNT(*)
+        FROM notifications
+        WHERE recipient_id = #{recipientId}
+        AND is_read = 0
+        AND is_deleted = 0
+    </select>
+
+    <select id="existsSolarAnomaly" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM notifications
+        WHERE type = 'SOLAR_ANOMALY'
+        AND ref_id = #{deviceId}
+        AND YEAR(created_at) = #{recordYear}
+        AND MONTH(created_at) = #{recordMonth}
+        AND is_deleted = 0
+    </select>
+
+    <select id="existsContractExpiry" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM notifications
+        WHERE type = 'CONTRACT_EXPIRY'
+        AND ref_id = #{contractId}
+        AND recipient_id = #{recipientId}
+        AND is_deleted = 0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notifications (
+        type, title, message, recipient_id, is_read,
+        ref_id, ref_type, created_at, updated_at, is_deleted
+        ) VALUES (
+        #{type}, #{title}, #{message}, #{recipientId}, 0,
+        #{refId}, #{refType}, NOW(), NOW(), 0
+        )
+    </insert>
+
+    <update id="updateReadById">
+        UPDATE notifications
+        SET is_read    = 1,
+        updated_at = NOW()
+        WHERE id = #{id}
+        AND is_deleted = 0
+    </update>
+
+    <update id="updateReadAllByRecipient">
+        UPDATE notifications
+        SET is_read    = 1,
+        updated_at = NOW()
+        WHERE recipient_id = #{recipientId}
+        AND is_read = 0
+        AND is_deleted = 0
+    </update>
+
+</mapper>
