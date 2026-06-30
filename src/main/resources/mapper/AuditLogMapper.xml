@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kemiel.greenenergy.module.auditlog.mapper.AuditLogMapper">
+
+    <select id="selectList"
+            resultType="com.kemiel.greenenergy.module.auditlog.entity.AuditLog">
+        SELECT
+        id, action, target_table, target_id,
+        before_value, after_value,
+        operator_id, operator_name, created_at
+        FROM audit_logs
+        <where>
+            <if test="targetTable != null">
+                AND target_table = #{targetTable}
+            </if>
+            <if test="action != null">
+                AND action = #{action}
+            </if>
+            <if test="operatorId != null">
+                AND operator_id = #{operatorId}
+            </if>
+            <if test="startDate != null">
+                AND created_at &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND created_at &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO audit_logs (
+        action, target_table, target_id,
+        before_value, after_value,
+        operator_id, operator_name, created_at
+        ) VALUES (
+        #{action}, #{targetTable}, #{targetId},
+        #{beforeValue}, #{afterValue},
+        #{operatorId}, #{operatorName}, NOW()
+        )
+    </insert>
+
+</mapper>
