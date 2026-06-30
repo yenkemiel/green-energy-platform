@@ -2,9 +2,11 @@ package com.kemiel.greenenergy.module.contract.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.kemiel.greenenergy.common.enums.AuditAction;
 import com.kemiel.greenenergy.common.enums.ContractStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
+import com.kemiel.greenenergy.common.helper.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
 import com.kemiel.greenenergy.module.contract.dto.ContractResponse;
 import com.kemiel.greenenergy.module.contract.dto.CreateContractRequest;
@@ -13,6 +15,8 @@ import com.kemiel.greenenergy.module.contract.dto.UpdateContractRequest;
 import com.kemiel.greenenergy.module.contract.entity.Contract;
 import com.kemiel.greenenergy.module.contract.mapper.ContractMapper;
 import com.kemiel.greenenergy.module.contract.service.ContractService;
+import com.kemiel.greenenergy.module.user.entity.User;
+import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,8 @@ import java.util.stream.Collectors;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractMapper contractMapper;
+    private final AuditLogHelper auditLogHelper;
+    private final UserMapper userMapper;
 
     /**
      * 查詢合約清單（支援分頁、狀態與類型篩選）
@@ -86,6 +92,15 @@ public class ContractServiceImpl implements ContractService {
         contract.setCreatedBy(operatorId);
 
         contractMapper.insert(contract);
+
+        User operator = userMapper.selectById(operatorId);
+        String afterValue = String.format(
+                "{\"supplierName\": \"%s\", \"contractType\": \"%s\", \"monthlySupplyKwh\": \"%s\"}",
+                contract.getSupplierName(), contract.getContractType(), contract.getMonthlySupplyKwh());
+        auditLogHelper.logCreate(
+                AuditAction.CREATE.name(), "contracts", contract.getId(),
+                afterValue, operatorId, operator.getDisplayName());
+
         log.info("合約建立成功，contractId={}, supplierName={}", contract.getId(), contract.getSupplierName());
         return toResponse(contractMapper.selectById(contract.getId()));
     }
@@ -141,6 +156,15 @@ public class ContractServiceImpl implements ContractService {
         contract.setTerminatedBy(operatorId);
 
         contractMapper.updateStatusById(contract);
+
+        User operator = userMapper.selectById(operatorId);
+        String terminateAfterValue = String.format(
+                "{\"status\": \"%s\", \"terminatedAt\": \"%s\"}",
+                ContractStatus.TERMINATED.name(), request.getTerminatedAt());
+        auditLogHelper.logCreate(
+                AuditAction.TERMINATE.name(), "contracts", id,
+                terminateAfterValue, operatorId, operator.getDisplayName());
+
         log.info("合約終止成功，contractId={}, terminate={}", id, operatorId);
     }
 
