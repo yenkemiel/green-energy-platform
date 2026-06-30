@@ -4,7 +4,7 @@ import com.kemiel.greenenergy.common.enums.DeviceStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.MonthUtils;
-import com.kemiel.greenenergy.config.AnomalyConfig;
+import com.kemiel.greenenergy.module.greenenergy.config.AnomalyConfig;
 import com.kemiel.greenenergy.module.notification.service.NotificationService;
 import com.kemiel.greenenergy.module.solar.dto.CreateSolarMonthlyRecordRequest;
 import com.kemiel.greenenergy.module.solar.dto.SolarMonthlyRecordResponse;
@@ -105,7 +105,12 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         record.setCreatedBy(operatorId);
 
         recordMapper.insert(record);
-        return toResponse(recordMapper.selectById(record.getId()));
+
+        SolarMonthlyRecord saved = recordMapper.selectById(record.getId());
+        checkAndTriggerAnomaly(device, saved);
+
+        return toResponse(saved);
+
     }
 
     /**
@@ -140,7 +145,10 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         record.setTheoreticalKwh(theoreticalKwh);
         recordMapper.updateById(record);
 
-        return toResponse(record);
+        SolarMonthlyRecord updated = recordMapper.selectById(recordId);
+        checkAndTriggerAnomaly(device, updated);
+
+        return toResponse(updated);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.kemiel.greenenergy.config;
+package com.kemiel.greenenergy.module.greenenergy.config;
 
 import java.math.BigDecimal;
 
