@@ -56,4 +56,21 @@
         WHERE id = #{id}
             AND is_deleted = 0
     </update>
+
+    <select id="selectSumActualKwhByYearAndMonth" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(actual_kwh), 0)
+        FROM solar_monthly_records
+        WHERE record_year = #{recordYear}
+        AND record_month = #{recordMonth}
+        AND is_deleted = 0
+    </select>
+
+    <select id="existsByYearAndMonth" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM solar_monthly_records
+        WHERE record_year = #{recordYear}
+        AND record_month = #{recordMonth}
+        AND is_deleted = 0
+    </select>
+
 </mapper>

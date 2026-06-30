@@ -81,4 +81,29 @@
             AND is_void = 0
             AND is_deleted = 0
     </select>
+
+    <select id="selectSumKwhEquivalentByCompletedMonth" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(kwh_equivalent), 0)
+        FROM procurements
+        WHERE YEAR(completed_date) = #{year}
+        AND MONTH(completed_date) = #{month}
+        AND status = 'COMPLETED'
+        AND is_void = 0
+        AND is_deleted = 0
+    </select>
+
+    <select id="selectSumKwhGroupBySupplyType"
+            resultType="com.kemiel.greenenergy.module.procurement.dto.ProcurementKwhBySupplyType">
+        SELECT
+        supply_type AS supplyType,
+        COALESCE(SUM(kwh_equivalent), 0) AS kwh
+        FROM procurements
+        WHERE YEAR(completed_date) = #{year}
+        AND MONTH(completed_date) = #{month}
+        AND status = 'COMPLETED'
+        AND is_void = 0
+        AND is_deleted = 0
+        GROUP BY supply_type
+    </select>
+
 </mapper>

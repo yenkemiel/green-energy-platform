@@ -80,4 +80,26 @@
         AND is_deleted = 0
     </update>
 
+    <select id="selectSumMonthlySupplyKwhByMonth" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(monthly_supply_kwh), 0)
+        FROM contracts
+        WHERE status = 'ACTIVE'
+        AND start_date &lt;= #{lastDay}
+        AND end_date &gt;= #{firstDay}
+        AND is_deleted = 0
+    </select>
+
+    <select id="selectSumKwhGroupByType"
+            resultType="com.kemiel.greenenergy.module.contract.dto.ContractKwhByType">
+        SELECT
+        contract_type AS contractType,
+        COALESCE(SUM(monthly_supply_kwh), 0) AS kwh
+        FROM contracts
+        WHERE status = 'ACTIVE'
+        AND start_date &lt;= #{lastDay}
+        AND end_date &gt;= #{firstDay}
+        AND is_deleted = 0
+        GROUP BY contract_type
+    </select>
+
 </mapper>

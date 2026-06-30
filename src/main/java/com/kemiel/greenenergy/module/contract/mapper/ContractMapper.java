@@ -1,9 +1,11 @@
 package com.kemiel.greenenergy.module.contract.mapper;
 
+import com.kemiel.greenenergy.module.contract.dto.ContractKwhByType;
 import com.kemiel.greenenergy.module.contract.entity.Contract;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,4 +34,11 @@ public interface ContractMapper {
     void updateById(Contract contract);
 
     void updateStatusById(Contract contract);
+
+    BigDecimal selectSumMonthlySupplyKwhByMonth(@Param("firstDay") LocalDate firstDay,
+                                                @Param("lastDay") LocalDate lastDay);
+
+    List<ContractKwhByType> selectSumKwhGroupByType(@Param("firstDay") LocalDate firstDay,
+                                                    @Param("lastDay") LocalDate lastDay);
+
 }

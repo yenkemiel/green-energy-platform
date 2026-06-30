@@ -1,10 +1,12 @@
 package com.kemiel.greenenergy.module.procurement.mapper;
 
+import com.kemiel.greenenergy.module.procurement.dto.ProcurementKwhBySupplyType;
 import com.kemiel.greenenergy.module.procurement.dto.ProcurementSummaryStats;
 import com.kemiel.greenenergy.module.procurement.entity.Procurement;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,4 +29,10 @@ public interface ProcurementMapper {
                          @Param("updatedBy") Long updatedBy);
 
     ProcurementSummaryStats selectSummaryStats(LocalDate deadline);
+
+    BigDecimal selectSumKwhEquivalentByCompletedMonth(@Param("year") Integer year,
+                                                      @Param("month") Integer month);
+
+    List<ProcurementKwhBySupplyType> selectSumKwhGroupBySupplyType(@Param("year") Integer year,
+                                                                   @Param("month") Integer month);
 }

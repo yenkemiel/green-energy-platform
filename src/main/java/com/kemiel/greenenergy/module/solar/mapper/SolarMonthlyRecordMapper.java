@@ -4,6 +4,7 @@ import com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,12 +13,25 @@ import java.util.List;
  */
 @Mapper
 public interface SolarMonthlyRecordMapper {
+
     List<SolarMonthlyRecord> selectListByDeviceIdAndYear(@Param("deviceId") Long deviceId,
                                                                  @Param("year") Integer year);
+
     SolarMonthlyRecord selectByDeviceIdAndYearMonth(@Param("deviceId") Long deviceId,
                                                                 @Param("year") Integer year, @Param("month") Integer month);
+
     List<Integer> selectDistinctYears(@Param("deviceId") Long deviceId);
+
     SolarMonthlyRecord selectById(Long id);
+
     void insert(SolarMonthlyRecord record);
+
     void updateById(SolarMonthlyRecord record);
+
+    BigDecimal selectSumActualKwhByYearAndMonth(@Param("recordYear") Integer recordYear,
+                                                @Param("recordMonth") Integer recordMonth);
+
+    boolean existsByYearAndMonth(@Param("recordYear") Integer recordYear,
+                                 @Param("recordMonth") Integer recordMonth);
+
 }
