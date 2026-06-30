@@ -1,8 +1,10 @@
 package com.kemiel.greenenergy.module.solar.service.impl;
 
+import com.kemiel.greenenergy.common.enums.AuditAction;
 import com.kemiel.greenenergy.common.enums.DeviceStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
+import com.kemiel.greenenergy.common.helper.AuditLogHelper;
 import com.kemiel.greenenergy.common.util.MonthUtils;
 import com.kemiel.greenenergy.module.greenenergy.config.AnomalyConfig;
 import com.kemiel.greenenergy.module.notification.service.NotificationService;
@@ -14,6 +16,8 @@ import com.kemiel.greenenergy.module.solar.entity.SolarMonthlyRecord;
 import com.kemiel.greenenergy.module.solar.mapper.SolarDeviceMapper;
 import com.kemiel.greenenergy.module.solar.mapper.SolarMonthlyRecordMapper;
 import com.kemiel.greenenergy.module.solar.service.SolarMonthlyRecordService;
+import com.kemiel.greenenergy.module.user.entity.User;
+import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     private final SolarMonthlyRecordMapper recordMapper;
     private final SolarDeviceMapper deviceMapper;
     private final NotificationService notificationService;
+    private final AuditLogHelper auditLogHelper;
+    private final UserMapper userMapper;
 
     /**
      * 查詢指定設備指定年度所有月份發電紀錄
@@ -68,8 +74,6 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
     /**
      * 新增月發電紀錄，並計算理論發電量快照
-     *
-     * @param operatorId 當前操作者 userId
      */
     @Override
     public SolarMonthlyRecordResponse createRecord(Long deviceId,
@@ -115,8 +119,6 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
     /**
      * 修改月發電紀錄，並重新計算理論發電量快照
-     *
-     * @param operatorId 當前操作者 userId
      */
     @Override
     public SolarMonthlyRecordResponse updateRecord(Long deviceId, Long recordId,
@@ -141,6 +143,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
         BigDecimal theoreticalKwh = calculateTheoreticalKwh(device.getCapacityKw(), yearMonth);
 
+        BigDecimal oldActualKwh = record.getActualKwh();
+
         record.setActualKwh(request.getActualKwh());
         record.setTheoreticalKwh(theoreticalKwh);
         recordMapper.updateById(record);
@@ -148,14 +152,18 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         SolarMonthlyRecord updated = recordMapper.selectById(recordId);
         checkAndTriggerAnomaly(device, updated);
 
+        String beforeValue = String.format("{\"actualKwh\": \"%s\"}", oldActualKwh);
+        String afterValue = String.format("{\"actualKwh\": \"%s\"}", request.getActualKwh());
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.UPDATE.name(), "solar_monthly_records", recordId,
+                beforeValue, afterValue, operatorId, operator.getDisplayName());
+
         return toResponse(updated);
     }
 
     /**
      * 偵測月發電紀錄是否異常，滿足任一條件即觸發通知，同設備同月份不重複觸發
-     *
-     * @param device  太陽能設備
-     * @param record  當月發電紀錄
      */
     private void checkAndTriggerAnomaly(SolarDevice device, SolarMonthlyRecord record) {
         int year = record.getRecordYear();
