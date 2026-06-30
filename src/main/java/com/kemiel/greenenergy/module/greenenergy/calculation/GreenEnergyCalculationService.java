@@ -3,6 +3,7 @@ package com.kemiel.greenenergy.module.greenenergy.calculation;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.PredictionResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.SimulationResult;
 
 import java.math.BigDecimal;
 
@@ -29,4 +30,11 @@ public interface GreenEnergyCalculationService {
     void writeMonthlySummarySnapshot(int year, int month, Long lockedBy);
 
     PredictionResult predictYearEnd(int year);
+
+    SimulationResult simulate(BigDecimal currentGreenKwh,
+                              BigDecimal currentUsageKwh,
+                              BigDecimal requiredGreenKwh,
+                              BigDecimal additionalContractKwh,
+                              int additionalProcurementQuantity);
+
 }

@@ -7,9 +7,7 @@ import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.module.contract.mapper.ContractMapper;
 import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
-import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
-import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
-import com.kemiel.greenenergy.module.greenenergy.calculation.dto.PredictionResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.*;
 import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
 import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
@@ -325,4 +323,52 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
                 .note(note)
                 .build();
     }
+
+    /**
+     * 模擬增加合約供電或採購後的年度達成率變化，結果不儲存
+     *
+     * @param currentGreenKwh               當前累積綠電量
+     * @param currentUsageKwh               當前累積用電量
+     * @param requiredGreenKwh              年度需要綠電量
+     * @param additionalContractKwh         假設增加的合約供電量
+     * @param additionalProcurementQuantity  假設增加的 T-REC 採購張數
+     */
+    @Override
+    public SimulationResult simulate(BigDecimal currentGreenKwh,
+                                     BigDecimal currentUsageKwh,
+                                     BigDecimal requiredGreenKwh,
+                                     BigDecimal additionalContractKwh,
+                                     int additionalProcurementQuantity) {
+        log.info("執行 RE100 達成模擬，additionalContractKwh={}, additionalProcurementQuantity={}",
+                additionalContractKwh, additionalProcurementQuantity);
+
+        BigDecimal additionalProcurementKwh =
+                BigDecimal.valueOf(additionalProcurementQuantity).multiply(ONE_THOUSAND);
+
+        BigDecimal simulatedAdditionalKwh =
+                additionalContractKwh.add(additionalProcurementKwh);
+        BigDecimal simulatedTotalGreenKwh =
+                currentGreenKwh.add(simulatedAdditionalKwh);
+
+        BigDecimal currentAchievementRate =
+                calculateAchievementRate(currentGreenKwh, currentUsageKwh);
+        BigDecimal simulatedAchievementRate =
+                calculateAchievementRate(simulatedTotalGreenKwh, currentUsageKwh);
+        BigDecimal simulatedGapKwh =
+                calculateGap(requiredGreenKwh, simulatedTotalGreenKwh);
+
+        return SimulationResult.builder()
+                .currentGreenKwh(currentGreenKwh)
+                .currentAchievementRate(currentAchievementRate)
+                .simulatedAdditionalKwh(simulatedAdditionalKwh)
+                .simulatedTotalGreenKwh(simulatedTotalGreenKwh)
+                .simulatedAchievementRate(simulatedAchievementRate)
+                .simulatedGapKwh(simulatedGapKwh)
+                .breakdown(SimulationBreakdown.builder()
+                        .additionalContractKwh(additionalContractKwh)
+                        .additionalProcurementKwh(additionalProcurementKwh)
+                        .build())
+                .build();
+    }
+
 }
