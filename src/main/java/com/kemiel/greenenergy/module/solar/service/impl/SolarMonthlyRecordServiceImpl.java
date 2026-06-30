@@ -1,8 +1,11 @@
 package com.kemiel.greenenergy.module.solar.service.impl;
 
+import com.kemiel.greenenergy.common.enums.DeviceStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.MonthUtils;
+import com.kemiel.greenenergy.config.AnomalyConfig;
+import com.kemiel.greenenergy.module.notification.service.NotificationService;
 import com.kemiel.greenenergy.module.solar.dto.CreateSolarMonthlyRecordRequest;
 import com.kemiel.greenenergy.module.solar.dto.SolarMonthlyRecordResponse;
 import com.kemiel.greenenergy.module.solar.dto.UpdateSolarMonthlyRecordRequest;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +35,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
     private final SolarMonthlyRecordMapper recordMapper;
     private final SolarDeviceMapper deviceMapper;
+    private final NotificationService notificationService;
 
     /**
      * 查詢指定設備指定年度所有月份發電紀錄
@@ -136,6 +141,67 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         recordMapper.updateById(record);
 
         return toResponse(record);
+    }
+
+    /**
+     * 偵測月發電紀錄是否異常，滿足任一條件即觸發通知，同設備同月份不重複觸發
+     *
+     * @param device  太陽能設備
+     * @param record  當月發電紀錄
+     */
+    private void checkAndTriggerAnomaly(SolarDevice device, SolarMonthlyRecord record) {
+        int year = record.getRecordYear();
+        int month = record.getRecordMonth();
+        BigDecimal actualKwh = record.getActualKwh();
+        BigDecimal theoreticalKwh = record.getTheoreticalKwh();
+
+        if (device.getStatus() == DeviceStatus.INACTIVE) {
+            return;
+        }
+
+        LocalDate installDate = device.getInstallDate();
+        YearMonth installMonth = YearMonth.of(installDate.getYear(), installDate.getMonthValue());
+        YearMonth recordMonth = YearMonth.of(year, month);
+        if (recordMonth.equals(installMonth)) {
+            return;
+        }
+
+        if (notificationService.existsSolarAnomalyNotification(device.getId(), year, month)) {
+            log.info("同設備同月份已有異常通知，跳過，deviceId={}, year={}, month={}",
+                    device.getId(), year, month);
+            return;
+        }
+
+        String reason = null;
+
+        BigDecimal threshold = theoreticalKwh.multiply(AnomalyConfig.THEORETICAL_THRESHOLD);
+        if (actualKwh.compareTo(threshold) < 0) {
+            reason = String.format("實際發電量 %.0f kWh，低於理論發電量 %.0f kWh 的 50%%",
+                    actualKwh, theoreticalKwh);
+        }
+
+        if (reason == null) {
+            int prevMonth = month == 1 ? 12 : month - 1;
+            int prevYear = month == 1 ? year - 1 : year;
+            SolarMonthlyRecord prevRecord = recordMapper.selectByDeviceIdAndYearMonth(
+                    device.getId(), prevYear, prevMonth);
+            if (prevRecord != null) {
+                BigDecimal momThreshold = prevRecord.getActualKwh()
+                        .multiply(BigDecimal.ONE.subtract(AnomalyConfig.MOM_DECLINE_THRESHOLD));
+                if (actualKwh.compareTo(momThreshold) < 0) {
+                    reason = String.format("實際發電量 %.0f kWh，較上月 %.0f kWh 下降超過 30%%",
+                            actualKwh, prevRecord.getActualKwh());
+                }
+            }
+        }
+
+        if (reason != null) {
+            log.warn("偵測到太陽能發電異常，deviceId={}, year={}, month={}, reason={}",
+                    device.getId(), year, month, reason);
+            notificationService.createSolarAnomalyNotification(
+                    device.getId(), device.getDeviceName(),
+                    year, month, actualKwh, theoreticalKwh, reason);
+        }
     }
 
     /**
