@@ -114,8 +114,9 @@
     <select id="selectExpiringContracts"
             resultType="com.kemiel.greenenergy.module.contract.entity.Contract">
         SELECT
-        id, supplier_name, contract_type, start_date, end_date,
-        monthly_supply_kwh, rate_per_kwh, total_amount, status,
+        id, supplier_name, contract_type, monthly_supply_kwh,
+        start_date, end_date, rate_per_kwh, monthly_cost_snapshot,
+        status, terminated_at, terminated_by, notes,
         location_id, created_by, updated_by, created_at, updated_at, is_deleted
         FROM contracts
         WHERE status = 'ACTIVE'
