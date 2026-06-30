@@ -50,7 +50,11 @@ public enum ErrorCode {
     TARGET_YEAR_DUPLICATE("TARGET_YEAR_DUPLICATE", "該年度目標已存在"),
 
     // 通知
-    NOTIFICATION_NOT_FOUND("NOTIFICATION_NOT_FOUND", "通知不存在")
+    NOTIFICATION_NOT_FOUND("NOTIFICATION_NOT_FOUND", "通知不存在"),
+
+    // 總紀錄
+    RECORD_STATUS_FILTER_INVALID("RECORD_STATUS_FILTER_INVALID", "查詢全部類型時不可同時篩選狀態，請先指定 type")
+
     ;
 
     private final String code;
