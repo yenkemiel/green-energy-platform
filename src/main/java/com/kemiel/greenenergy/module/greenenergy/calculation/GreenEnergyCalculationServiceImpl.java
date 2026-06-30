@@ -1,0 +1,216 @@
+package com.kemiel.greenenergy.module.greenenergy.calculation;
+
+import com.kemiel.greenenergy.common.enums.ElectricityRecordStatus;
+import com.kemiel.greenenergy.common.enums.MonthRecordStatus;
+import com.kemiel.greenenergy.common.exception.BusinessException;
+import com.kemiel.greenenergy.common.exception.ErrorCode;
+import com.kemiel.greenenergy.module.contract.mapper.ContractMapper;
+import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
+import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
+import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
+import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
+import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
+import com.kemiel.greenenergy.module.solar.mapper.SolarMonthlyRecordMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * 跨模組綠電計算 Service 實作
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculationService {
+
+    private final SolarMonthlyRecordMapper solarMonthlyRecordMapper;
+    private final ContractMapper contractMapper;
+    private final ProcurementMapper procurementMapper;
+    private final ElectricityUsageRecordMapper electricityUsageRecordMapper;
+    private final MonthlySummarySnapshotMapper monthlySummarySnapshotMapper;
+
+    private static final BigDecimal CO2_FACTOR = new BigDecimal("0.494");
+    private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
+
+    /**
+     * 計算指定月份的綠電彙整結果，OPEN 月份動態計算
+     */
+    @Override
+    public MonthlySummaryResult calculateMonthlySummary(int year, int month) {
+        log.info("計算月度綠電彙整，year={}, month={}", year, month);
+
+        ElectricityUsageRecord usageRecord =
+                electricityUsageRecordMapper.selectByYearAndMonth(year, month);
+
+        BigDecimal usageKwh = (usageRecord != null) ? usageRecord.getUsageKwh() : null;
+
+        LocalDate firstDay = LocalDate.of(year, month, 1);
+        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+
+        BigDecimal solarKwh =
+                solarMonthlyRecordMapper.selectSumActualKwhByYearAndMonth(year, month);
+        BigDecimal contractKwh =
+                contractMapper.selectSumMonthlySupplyKwhByMonth(firstDay, lastDay);
+        BigDecimal procurementKwh =
+                procurementMapper.selectSumKwhEquivalentByCompletedMonth(year, month);
+
+        BigDecimal totalGreenKwh = solarKwh.add(contractKwh).add(procurementKwh);
+
+        BigDecimal achievementRate = null;
+        BigDecimal surplusKwh = BigDecimal.ZERO;
+
+        if (usageKwh != null && usageKwh.compareTo(BigDecimal.ZERO) > 0) {
+            achievementRate = calculateAchievementRate(totalGreenKwh, usageKwh);
+            surplusKwh = calculateSurplus(totalGreenKwh, usageKwh);
+        }
+
+        boolean solarFilled = solarMonthlyRecordMapper.existsByYearAndMonth(year, month);
+        boolean usageFilled = (usageRecord != null);
+        int completeness = (solarFilled && usageFilled) ? 100 : 0;
+
+        String status = (usageRecord != null &&
+                ElectricityRecordStatus.LOCKED.name().equals(usageRecord.getStatus()))
+                ? MonthRecordStatus.LOCKED.name()
+                : MonthRecordStatus.OPEN.name();
+
+        return MonthlySummaryResult.builder()
+                .year(year)
+                .month(month)
+                .solarKwh(solarKwh)
+                .contractKwh(contractKwh)
+                .procurementKwh(procurementKwh)
+                .totalGreenKwh(totalGreenKwh)
+                .usageKwh(usageKwh)
+                .achievementRate(achievementRate)
+                .surplusKwh(surplusKwh)
+                .completeness(completeness)
+                .status(status)
+                .build();
+    }
+
+    /**
+     * 查詢指定月份的資料完整度，判斷太陽能與用電量是否已填
+     */
+    @Override
+    public CompletenessResult checkCompleteness(int year, int month) {
+        log.info("查詢資料完整度，year={}, month={}", year, month);
+
+        boolean solarFilled = solarMonthlyRecordMapper.existsByYearAndMonth(year, month);
+        ElectricityUsageRecord usageRecord =
+                electricityUsageRecordMapper.selectByYearAndMonth(year, month);
+        boolean usageFilled = (usageRecord != null);
+        int completeness = (solarFilled && usageFilled) ? 100 : 0;
+        boolean canLock = completeness == 100;
+
+        return CompletenessResult.builder()
+                .year(year)
+                .month(month)
+                .solarFilled(solarFilled)
+                .usageFilled(usageFilled)
+                .completeness(completeness)
+                .canLock(canLock)
+                .build();
+    }
+
+    /**
+     * 計算達成率，最多回傳 1.0，usageKwh 為零時回傳 0.0
+     */
+    @Override
+    public BigDecimal calculateAchievementRate(BigDecimal totalGreenKwh, BigDecimal usageKwh) {
+        if (usageKwh == null || usageKwh.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal rate = totalGreenKwh.divide(usageKwh, 4, RoundingMode.HALF_UP);
+        return rate.compareTo(BigDecimal.ONE) > 0 ? BigDecimal.ONE : rate;
+    }
+
+    /**
+     * 計算年度缺口，結果最小為 0
+     */
+    @Override
+    public BigDecimal calculateGap(BigDecimal requiredGreenKwh, BigDecimal totalGreenKwh) {
+        BigDecimal gap = requiredGreenKwh.subtract(totalGreenKwh);
+        return gap.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : gap;
+    }
+
+    /**
+     * 計算當月結餘，總綠電超過用電量的部分，最小為 0
+     */
+    @Override
+    public BigDecimal calculateSurplus(BigDecimal totalGreenKwh, BigDecimal usageKwh) {
+        if (usageKwh == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal surplus = totalGreenKwh.subtract(usageKwh);
+        return surplus.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : surplus;
+    }
+
+    /**
+     * 計算 CO₂ 減少量（公噸），以台灣電力碳排放係數 0.494 換算
+     */
+    @Override
+    public BigDecimal calculateCo2Reduced(BigDecimal greenKwh) {
+        return greenKwh.multiply(CO2_FACTOR)
+                .divide(ONE_THOUSAND, 2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 計算年度需要綠電量
+     *
+     * @param annualElectricityKwh  年度預估總用電量
+     * @param re100TargetRatio      RE100 目標比例（0.0 ~ 1.0）
+     */
+    @Override
+    public BigDecimal calculateRequiredGreenKwh(BigDecimal annualElectricityKwh,
+                                                BigDecimal re100TargetRatio) {
+        return annualElectricityKwh.multiply(re100TargetRatio)
+                .setScale(4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 鎖定月份時計算並寫入 monthly_summary_snapshots，由 ElectricityUsageService.lockRecord() 呼叫
+     *
+     * @param year      年份
+     * @param month     月份
+     * @param lockedBy  操作者 user id
+     */
+    @Override
+    @Transactional
+    public void writeMonthlySummarySnapshot(int year, int month, Long lockedBy) {
+        log.info("寫入月度快照，year={}, month={}, lockedBy={}", year, month, lockedBy);
+
+        MonthlySummarySnapshot existing =
+                monthlySummarySnapshotMapper.selectByYearAndMonth(year, month);
+        if (existing != null) {
+            throw new BusinessException(ErrorCode.SNAPSHOT_ALREADY_EXISTS);
+        }
+
+        MonthlySummaryResult result = calculateMonthlySummary(year, month);
+
+        MonthlySummarySnapshot snapshot = new MonthlySummarySnapshot();
+        snapshot.setRecordYear(year);
+        snapshot.setRecordMonth(month);
+        snapshot.setTotalGreenKwh(result.getTotalGreenKwh());
+        snapshot.setSolarKwh(result.getSolarKwh());
+        snapshot.setContractKwh(result.getContractKwh());
+        snapshot.setProcurementKwh(result.getProcurementKwh());
+        snapshot.setUsageKwh(result.getUsageKwh() != null
+                ? result.getUsageKwh() : BigDecimal.ZERO);
+        snapshot.setAchievementRate(result.getAchievementRate() != null
+                ? result.getAchievementRate() : BigDecimal.ZERO);
+        snapshot.setSurplusKwh(result.getSurplusKwh());
+        snapshot.setLockedBy(lockedBy);
+        snapshot.setLockedAt(LocalDateTime.now());
+
+        monthlySummarySnapshotMapper.insert(snapshot);
+        log.info("月度快照寫入成功，year={}, month={}", year, month);
+    }
+}
