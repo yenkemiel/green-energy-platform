@@ -6,7 +6,7 @@ import com.kemiel.greenenergy.common.enums.AuditAction;
 import com.kemiel.greenenergy.common.enums.ContractStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
-import com.kemiel.greenenergy.common.helper.AuditLogHelper;
+import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
 import com.kemiel.greenenergy.module.contract.dto.ContractResponse;
 import com.kemiel.greenenergy.module.contract.dto.CreateContractRequest;

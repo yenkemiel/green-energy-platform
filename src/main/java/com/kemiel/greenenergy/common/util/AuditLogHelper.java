@@ -1,4 +1,4 @@
-package com.kemiel.greenenergy.common.helper;
+package com.kemiel.greenenergy.common.util;
 
 import com.kemiel.greenenergy.module.auditlog.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
