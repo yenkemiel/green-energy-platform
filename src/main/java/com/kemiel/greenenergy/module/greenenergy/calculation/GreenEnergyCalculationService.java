@@ -2,6 +2,7 @@ package com.kemiel.greenenergy.module.greenenergy.calculation;
 
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.PredictionResult;
 
 import java.math.BigDecimal;
 
@@ -26,4 +27,6 @@ public interface GreenEnergyCalculationService {
                                          BigDecimal re100TargetRatio);
 
     void writeMonthlySummarySnapshot(int year, int month, Long lockedBy);
+
+    PredictionResult predictYearEnd(int year);
 }

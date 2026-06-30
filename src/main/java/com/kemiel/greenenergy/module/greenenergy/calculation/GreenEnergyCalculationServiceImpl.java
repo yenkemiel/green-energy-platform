@@ -9,10 +9,13 @@ import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.PredictionResult;
 import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
 import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
 import com.kemiel.greenenergy.module.solar.mapper.SolarMonthlyRecordMapper;
+import com.kemiel.greenenergy.module.target.entity.AnnualTarget;
+import com.kemiel.greenenergy.module.target.mapper.AnnualTargetMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 跨模組綠電計算 Service 實作
@@ -36,6 +43,7 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     private final ProcurementMapper procurementMapper;
     private final ElectricityUsageRecordMapper electricityUsageRecordMapper;
     private final MonthlySummarySnapshotMapper monthlySummarySnapshotMapper;
+    private final AnnualTargetMapper annualTargetMapper;
 
     private static final BigDecimal CO2_FACTOR = new BigDecimal("0.494");
     private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
@@ -212,5 +220,109 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
 
         monthlySummarySnapshotMapper.insert(snapshot);
         log.info("月度快照寫入成功，year={}, month={}", year, month);
+    }
+
+    /**
+     * 以線性回歸外推年底預估達成率，至少需 3 個月有效資料
+     *
+     * @param year  目標年度
+     */
+    @Override
+    public PredictionResult predictYearEnd(int year) {
+        log.info("執行年底達成率線性外推，year={}", year);
+
+        Map<Integer, BigDecimal> monthlyRates = new LinkedHashMap<>();
+
+        for (int month = 1; month <= 12; month++) {
+            ElectricityUsageRecord usageRecord =
+                    electricityUsageRecordMapper.selectByYearAndMonth(year, month);
+            if (usageRecord == null) {
+                break;
+            }
+            MonthlySummaryResult result = calculateMonthlySummary(year, month);
+            if (result.getAchievementRate() != null) {
+                monthlyRates.put(month, result.getAchievementRate());
+            }
+        }
+
+        int n = monthlyRates.size();
+
+        if (n < 3) {
+            return PredictionResult.builder()
+                    .predictable(false)
+                    .basedOnMonths(n)
+                    .note("歷史資料不足，無法預測（至少需要 3 個月）")
+                    .build();
+        }
+
+        List<Integer> months = new ArrayList<>(monthlyRates.keySet());
+        List<BigDecimal> rates = new ArrayList<>(monthlyRates.values());
+
+        BigDecimal sumX = BigDecimal.ZERO;
+        BigDecimal sumY = BigDecimal.ZERO;
+        BigDecimal sumXY = BigDecimal.ZERO;
+        BigDecimal sumX2 = BigDecimal.ZERO;
+        BigDecimal bigN = BigDecimal.valueOf(n);
+
+        for (int i = 0; i < n; i++) {
+            BigDecimal x = BigDecimal.valueOf(months.get(i));
+            BigDecimal y = rates.get(i);
+            sumX = sumX.add(x);
+            sumY = sumY.add(y);
+            sumXY = sumXY.add(x.multiply(y));
+            sumX2 = sumX2.add(x.multiply(x));
+        }
+
+        BigDecimal slope = (bigN.multiply(sumXY).subtract(sumX.multiply(sumY)))
+                .divide(bigN.multiply(sumX2).subtract(sumX.multiply(sumX)),
+                        8, RoundingMode.HALF_UP);
+        BigDecimal intercept = (sumY.subtract(slope.multiply(sumX)))
+                .divide(bigN, 8, RoundingMode.HALF_UP);
+
+        BigDecimal totalRate = BigDecimal.ZERO;
+        for (int month = 1; month <= 12; month++) {
+            BigDecimal rate;
+            if (monthlyRates.containsKey(month)) {
+                rate = monthlyRates.get(month);
+            } else {
+                rate = slope.multiply(BigDecimal.valueOf(month)).add(intercept);
+                rate = rate.min(BigDecimal.ONE).max(BigDecimal.ZERO);
+            }
+            totalRate = totalRate.add(rate);
+        }
+
+        BigDecimal predictedYearEndRate = totalRate
+                .divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP);
+
+        BigDecimal currentAchievementRate = rates.get(rates.size() - 1);
+
+        AnnualTarget target = annualTargetMapper.selectByYear(year);
+        BigDecimal predictedYearEndGapKwh = null;
+        if (target != null) {
+            BigDecimal requiredGreenKwh = calculateRequiredGreenKwh(
+                    target.getAnnualElectricityKwh(), target.getRe100TargetRatio());
+            BigDecimal predictedYearEndGreenKwh =
+                    requiredGreenKwh.multiply(predictedYearEndRate);
+            predictedYearEndGapKwh = calculateGap(requiredGreenKwh, predictedYearEndGreenKwh);
+        }
+
+        String ratePercent = predictedYearEndRate
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP)
+                .toPlainString();
+        String gapNote = predictedYearEndGapKwh != null
+                ? "，仍有缺口約 " + predictedYearEndGapKwh.setScale(0, RoundingMode.HALF_UP)
+                                   .toPlainString() + " kWh"
+                : "";
+        String note = "依線性趨勢推估，年底預估達成率約 " + ratePercent + "%" + gapNote;
+
+        return PredictionResult.builder()
+                .predictable(true)
+                .basedOnMonths(n)
+                .currentAchievementRate(currentAchievementRate)
+                .predictedYearEndRate(predictedYearEndRate)
+                .predictedYearEndGapKwh(predictedYearEndGapKwh)
+                .note(note)
+                .build();
     }
 }
