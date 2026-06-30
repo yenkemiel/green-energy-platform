@@ -43,6 +43,7 @@ public enum ErrorCode {
     // 月結
     MONTH_NOT_COMPLETE("MONTH_NOT_COMPLETE", "當月資料尚未完整，無法鎖定"),
     MONTH_ALREADY_LOCKED("MONTH_ALREADY_LOCKED", "當月已鎖定，無法重複操作"),
+    SNAPSHOT_ALREADY_EXISTS("SNAPSHOT_ALREADY_EXISTS", "該月份快照已存在"),
 
     // 目標
     TARGET_NOT_FOUND("TARGET_NOT_FOUND", "當年度目標不存在"),

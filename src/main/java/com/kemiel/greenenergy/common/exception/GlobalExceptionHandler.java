@@ -85,7 +85,8 @@ public class GlobalExceptionHandler {
                  TARGET_YEAR_DUPLICATE,
                  SOLAR_RECORD_DUPLICATE,
                  CONTRACT_OVERLAP,
-                 ELECTRICITY_RECORD_DUPLICATE -> HttpStatus.CONFLICT;
+                 ELECTRICITY_RECORD_DUPLICATE,
+                 SNAPSHOT_ALREADY_EXISTS -> HttpStatus.CONFLICT;
             case SOLAR_DEVICE_ALREADY_INACTIVE,
                  CONTRACT_NOT_ACTIVE,
                  PROCUREMENT_STATUS_INVALID,
