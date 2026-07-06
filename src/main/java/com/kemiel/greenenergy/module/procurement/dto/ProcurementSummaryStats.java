@@ -8,5 +8,6 @@ import lombok.Data;
 @Data
 public class ProcurementSummaryStats {
     private Integer totalQuantity;
+    private Integer usedQuantity;
     private Integer expiringWithin30Days;
 }
