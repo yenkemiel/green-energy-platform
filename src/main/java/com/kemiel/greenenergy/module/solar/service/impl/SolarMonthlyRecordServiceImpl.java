@@ -5,6 +5,7 @@ import com.kemiel.greenenergy.common.enums.DeviceStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
+import com.kemiel.greenenergy.common.util.MonthLockChecker;
 import com.kemiel.greenenergy.common.util.MonthUtils;
 import com.kemiel.greenenergy.module.greenenergy.config.AnomalyConfig;
 import com.kemiel.greenenergy.module.notification.service.NotificationService;
@@ -42,6 +43,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     private final NotificationService notificationService;
     private final AuditLogHelper auditLogHelper;
     private final UserMapper userMapper;
+    private final MonthLockChecker monthLockChecker;
 
     /**
      * 查詢指定設備指定年度所有月份發電紀錄
@@ -140,6 +142,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         if (!MonthUtils.isEditable(yearMonth)) {
             throw new BusinessException(ErrorCode.ELECTRICITY_RECORD_EXPIRED);
         }
+
+        monthLockChecker.assertNotLocked(yearMonth);
 
         BigDecimal theoreticalKwh = calculateTheoreticalKwh(device.getCapacityKw(), yearMonth);
 
