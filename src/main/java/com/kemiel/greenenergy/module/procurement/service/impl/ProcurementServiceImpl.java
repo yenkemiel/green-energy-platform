@@ -8,6 +8,7 @@ import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
+import com.kemiel.greenenergy.common.util.MonthLockChecker;
 import com.kemiel.greenenergy.module.procurement.dto.*;
 import com.kemiel.greenenergy.module.procurement.entity.Procurement;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
@@ -35,6 +36,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     private final ProcurementMapper procurementMapper;
     private final AuditLogHelper auditLogHelper;
     private final UserMapper userMapper;
+    private final MonthLockChecker monthLockChecker;
 
     /**
      * 查詢採購清單（支援分頁、狀態與作廢篩選）
@@ -246,6 +248,8 @@ public class ProcurementServiceImpl implements ProcurementService {
         }
 
         LocalDate completedDate = request.getCompletedDate();
+        monthLockChecker.assertNotLocked(YearMonth.from(completedDate));
+
         String purchaseMonth = YearMonth.from(completedDate).toString();
         LocalDate expiryDate = completedDate.plusYears(2);
 
@@ -281,6 +285,8 @@ public class ProcurementServiceImpl implements ProcurementService {
         if (!ProcurementStatus.COMPLETED.name().equals(procurement.getStatus())) {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
+
+        monthLockChecker.assertNotLocked(YearMonth.from(procurement.getCompletedDate()));
 
         String oldStatus = procurement.getStatus();
         Integer oldIsVoid = procurement.getIsVoid();
