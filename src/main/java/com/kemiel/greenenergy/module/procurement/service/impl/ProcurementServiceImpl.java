@@ -307,25 +307,26 @@ public class ProcurementServiceImpl implements ProcurementService {
     }
 
     /**
-     * 查詢憑證庫存總覽，usedQuantity 暫時固定為 0，待模組 07 整合
+     * 查詢憑證庫存總覽，usedQuantity 依 expiry_date 是否早於今天判斷是否已用罄
      */
     @Override
     public ProcurementSummaryResponse getSummary() {
-        LocalDate deadline = LocalDate.now().plusDays(30);
-        ProcurementSummaryStats stats = procurementMapper.selectSummaryStats(deadline);
+        LocalDate today = LocalDate.now();
+        LocalDate deadline = today.plusDays(30);
+        ProcurementSummaryStats stats = procurementMapper.selectSummaryStats(today, deadline);
 
         if (stats == null) {
             stats = new ProcurementSummaryStats();
             stats.setTotalQuantity(0);
+            stats.setUsedQuantity(0);
             stats.setExpiringWithin30Days(0);
         }
 
-        int usedQuantity = 0;
-        int availableQuantity = stats.getTotalQuantity() - usedQuantity;
+        int availableQuantity = stats.getTotalQuantity() - stats.getUsedQuantity();
 
         return ProcurementSummaryResponse.builder()
                 .totalQuantity(stats.getTotalQuantity())
-                .usedQuantity(usedQuantity)
+                .usedQuantity(stats.getUsedQuantity())
                 .availableQuantity(availableQuantity)
                 .expiringWithin30Days(stats.getExpiringWithin30Days())
                 .build();
