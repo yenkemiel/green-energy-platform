@@ -99,6 +99,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
             throw new BusinessException(ErrorCode.SOLAR_RECORD_DUPLICATE);
         }
 
+        monthLockChecker.assertNotLocked(yearMonth);
+
         BigDecimal theoreticalKwh = calculateTheoreticalKwh(device.getCapacityKw(), yearMonth);
 
         SolarMonthlyRecord record = new SolarMonthlyRecord();
