@@ -28,7 +28,8 @@ public interface ProcurementMapper {
                          @Param("status") String status,
                          @Param("updatedBy") Long updatedBy);
 
-    ProcurementSummaryStats selectSummaryStats(LocalDate deadline);
+    ProcurementSummaryStats selectSummaryStats(@Param("today") LocalDate today,
+                                               @Param("deadline") LocalDate deadline);
 
     BigDecimal selectSumKwhEquivalentByCompletedMonth(@Param("year") Integer year,
                                                       @Param("month") Integer month);
