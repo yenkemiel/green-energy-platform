@@ -74,12 +74,13 @@
 
     <select id="selectSummaryStats" resultType="com.kemiel.greenenergy.module.procurement.dto.ProcurementSummaryStats">
         SELECT
-            COALESCE(SUM(quantity),0) AS total_quantity,
-            COALESCE(SUM(CASE WHEN expiry_date &lt;= #{deadline} THEN quantity ELSE 0 END),0) AS expiring_within30_days
+        COALESCE(SUM(quantity), 0)                                                              AS total_quantity,
+        COALESCE(SUM(CASE WHEN expiry_date &lt; #{today} THEN quantity ELSE 0 END), 0)          AS used_quantity,
+        COALESCE(SUM(CASE WHEN expiry_date &lt;= #{deadline} THEN quantity ELSE 0 END), 0)      AS expiring_within30_days
         FROM procurements
         WHERE status = 'COMPLETED'
-            AND is_void = 0
-            AND is_deleted = 0
+        AND is_void = 0
+        AND is_deleted = 0
     </select>
 
     <select id="selectSumKwhEquivalentByCompletedMonth" resultType="java.math.BigDecimal">
