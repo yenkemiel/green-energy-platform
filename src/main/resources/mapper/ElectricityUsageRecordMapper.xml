@@ -38,6 +38,16 @@
         LIMIT 1
     </select>
 
+    <select id="selectLockedRecords" resultType="com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord">
+        SELECT
+        id, record_year, record_month, usage_kwh, status,
+        locked_at, locked_by, location_id,
+        created_by, updated_by, created_at, updated_at, is_deleted
+        FROM electricity_usage_records
+        WHERE status = 'LOCKED'
+        AND is_deleted = 0
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO electricity_usage_records (
         record_year, record_month, usage_kwh, status,

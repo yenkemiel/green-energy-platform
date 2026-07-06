@@ -20,6 +20,8 @@ public interface ElectricityUsageRecordMapper {
     ElectricityUsageRecord selectByYearAndMonth(@Param("recordYear") Integer recordYear,
                                                 @Param("recordMonth") Integer recordMonth);
 
+    List<ElectricityUsageRecord> selectLockedRecords();
+
     int insert(ElectricityUsageRecord record);
 
     int updateById(ElectricityUsageRecord record);
