@@ -76,7 +76,7 @@
         SELECT
         COALESCE(SUM(quantity), 0)                                                              AS total_quantity,
         COALESCE(SUM(CASE WHEN expiry_date &lt; #{today} THEN quantity ELSE 0 END), 0)          AS used_quantity,
-        COALESCE(SUM(CASE WHEN expiry_date &lt;= #{deadline} THEN quantity ELSE 0 END), 0)      AS expiring_within30_days
+        COALESCE(SUM(CASE WHEN expiry_date BETWEEN #{today} AND #{deadline} THEN quantity ELSE 0 END), 0) AS expiring_within30_days
         FROM procurements
         WHERE status = 'COMPLETED'
         AND is_void = 0
