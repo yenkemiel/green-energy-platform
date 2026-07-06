@@ -8,6 +8,7 @@ import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
+import com.kemiel.greenenergy.common.util.MonthLockChecker;
 import com.kemiel.greenenergy.module.contract.dto.ContractResponse;
 import com.kemiel.greenenergy.module.contract.dto.CreateContractRequest;
 import com.kemiel.greenenergy.module.contract.dto.TerminateContractRequest;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ public class ContractServiceImpl implements ContractService {
     private final ContractMapper contractMapper;
     private final AuditLogHelper auditLogHelper;
     private final UserMapper userMapper;
+    private final MonthLockChecker monthLockChecker;
 
     /**
      * 查詢合約清單（支援分頁、狀態與類型篩選）
@@ -126,6 +129,8 @@ public class ContractServiceImpl implements ContractService {
             throw new BusinessException(ErrorCode.CONTRACT_OVERLAP);
         }
 
+        monthLockChecker.assertNoLockedMonthInRange(request.getStartDate(), request.getEndDate());
+
         contract.setSupplierName(request.getSupplierName());
         contract.setMonthlySupplyKwh(request.getMonthlySupplyKwh());
         contract.setStartDate(request.getStartDate());
@@ -150,6 +155,8 @@ public class ContractServiceImpl implements ContractService {
         if (!ContractStatus.ACTIVE.name().equals(contract.getStatus())) {
             throw new BusinessException(ErrorCode.CONTRACT_NOT_ACTIVE);
         }
+
+        monthLockChecker.assertNotLocked(YearMonth.from(request.getTerminatedAt()));
 
         contract.setStatus(ContractStatus.TERMINATED.name());
         contract.setTerminatedAt(request.getTerminatedAt());
