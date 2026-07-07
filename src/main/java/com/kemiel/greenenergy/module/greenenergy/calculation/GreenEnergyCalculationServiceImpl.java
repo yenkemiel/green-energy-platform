@@ -47,7 +47,7 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
 
     /**
-     * 計算指定月份的綠電彙整結果，OPEN 月份動態計算
+     * 從三個綠電來源（太陽能、合約、採購）動態計算指定月份的彙整結果，包含達成率、結餘與資料完整度
      */
     @Override
     public MonthlySummaryResult calculateMonthlySummary(int year, int month) {
@@ -182,11 +182,12 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     }
 
     /**
-     * 鎖定月份時計算並寫入 monthly_summary_snapshots，由 ElectricityUsageService.lockRecord() 呼叫
+     * 鎖定月份時計算並寫入 monthly_summary_snapshots；同年月 snapshot 已存在則拋出
+     * SNAPSHOT_ALREADY_EXISTS，防止重複鎖定時二次覆蓋既有快照
      *
-     * @param year      年份
-     * @param month     月份
-     * @param lockedBy  操作者 user id
+     * @param year     年份
+     * @param month    月份
+     * @param lockedBy 操作者 user id
      */
     @Override
     @Transactional
@@ -221,9 +222,10 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     }
 
     /**
-     * 以線性回歸外推年底預估達成率，至少需 3 個月有效資料
+     * 以線性回歸外推年底預估達成率，僅取月份連續序列（遇第一個缺漏月份即停止累積），
+     * 未達年底的月份以外推值補全並限縮在 [0, 1]
      *
-     * @param year  目標年度
+     * @param year 目標年度
      */
     @Override
     public PredictionResult predictYearEnd(int year) {

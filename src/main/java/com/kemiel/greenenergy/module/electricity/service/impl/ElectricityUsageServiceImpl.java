@@ -50,7 +50,7 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     }
 
     /**
-     * 新增當月用電量記錄
+     * 新增當月用電量記錄，同月份不可重複建立，且需在補填截止期限（次月 5 號）內
      */
     @Override
     public ElectricityUsageResponse createRecord(CreateElectricityUsageRequest request, Long operatorId) {
@@ -80,7 +80,7 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     }
 
     /**
-     * 修改指定用電量記錄的用電量數值
+     * 修改指定月份的用電量數值，已鎖定或超過補填截止期限不可修改，修改後寫入 Audit Log
      */
     @Override
     public ElectricityUsageResponse updateRecord(Long id, UpdateElectricityUsageRequest request, Long operatorId) {
@@ -115,7 +115,8 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     }
 
     /**
-     * 鎖定指定月份，鎖定後不可修改
+     * 鎖定指定月份（status -> LOCKED），並觸發 GreenEnergyCalculationService 計算並寫入
+     * monthly_summary_snapshot；全程於 @Transactional 內執行，鎖定後寫入 Audit Log
      */
     @Override
     @Transactional
