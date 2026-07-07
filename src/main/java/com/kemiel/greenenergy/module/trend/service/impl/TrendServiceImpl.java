@@ -36,9 +36,10 @@ public class TrendServiceImpl implements TrendService {
     private final AnnualTargetMapper annualTargetMapper;
 
     /**
-     * 查詢指定年度 12 個月的趨勢報表，LOCKED 月份讀 snapshot，OPEN 月份動態計算，無資料月份回傳 null
+     * 查詢指定年度 12 個月的趨勢報表，LOCKED 月份讀 snapshot、OPEN 月份動態計算，
+     * 無資料月份回傳空白項目（僅 month 欄位有值，其餘 kwh 欄位為 null）
      *
-     * @param year  目標年度
+     * @param year 目標年度
      */
     @Override
     public MonthlyTrendResponse getMonthlyTrend(int year) {

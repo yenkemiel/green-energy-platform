@@ -24,7 +24,8 @@ public class AuditLogHelper {
     }
 
     /**
-     * 寫入一筆 beforeValue 為 null 的 Audit Log，適用於建立、鎖定等僅需記錄異動後狀態的操作
+     * 寫入一筆只有 afterValue 的 Audit Log，beforeValue 固定為 null，
+     * 適用於建立、鎖定等僅需記錄異動後狀態的操作
      */
     public void logCreate(String action, String targetTable, Long targetId,
                           String afterValue, Long operatorId, String operatorName) {

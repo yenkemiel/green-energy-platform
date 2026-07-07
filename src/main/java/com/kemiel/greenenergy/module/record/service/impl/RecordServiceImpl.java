@@ -26,13 +26,14 @@ public class RecordServiceImpl implements RecordService {
     private final RecordMapper recordMapper;
 
     /**
-     * 查詢合約與採購統一紀錄清單，支援類型、狀態、時間區間、供電類型篩選與分頁
+     * 查詢合約與採購統一紀錄清單，支援類型、狀態、時間區間、供電類型篩選與分頁。
+     * type=ALL 時不允許同時傳入 status，否則拋出 RECORD_STATUS_FILTER_INVALID。
      *
-     * @param type       資料類型（CONTRACT / PROCUREMENT / ALL）
-     * @param status     狀態篩選
+     * @param type       資料類型（CONTRACT／PROCUREMENT／ALL）
+     * @param status     狀態篩選（type=ALL 時必須為 null）
      * @param startDate  事件日期起始
      * @param endDate    事件日期結束
-     * @param supplyType 採購供電類型（PHYSICAL / REC_ONLY）
+     * @param supplyType 採購供電類型（PHYSICAL／REC_ONLY）
      * @param page       頁碼（從 0 開始）
      * @param size       每頁筆數
      */
