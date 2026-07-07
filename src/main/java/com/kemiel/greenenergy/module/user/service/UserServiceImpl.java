@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 建立使用者
+     * 建立使用者，密碼以 BCrypt 加密後儲存，username 重複時拋出 USERNAME_ALREADY_EXISTS
      *
      * @param operatorId 操作者 userId（存入 created_by）
      */
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 修改使用者資料（displayName、role）
+     * 更新使用者帳號啟用狀態（is_active），停用後帳號無法登入但資料不刪除（非軟刪除）
      */
     @Override
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
@@ -100,7 +100,9 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 本人定期修改自己的密碼
+     * 本人修改自己的密碼，新密碼與現有密碼相同時拋出 PASSWORD_SAME_AS_OLD
+     *
+     * @param operatorId 目前登入使用者的 userId
      */
     @Override
     public void changeMyPassword(ChangePasswordRequest request, Long operatorId) {
@@ -126,6 +128,9 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    /**
+     * 依 id 查詢使用者，查無資料則拋出 USER_NOT_FOUND
+     */
     private User findUserOrThrow(Long id) {
         User user = userMapper.selectById(id);
         if(user == null) {
