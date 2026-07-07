@@ -31,9 +31,11 @@ public class SimulationServiceImpl implements SimulationService {
     private final AnnualTargetMapper annualTargetMapper;
 
     /**
-     * 執行 RE100 達成模擬，以今年累積綠電量與用電量為基準，即時計算模擬結果。
+     * 執行 RE100 達成模擬，彙整今年 1 月至當月的實際綠電量（LOCKED 月份讀 snapshot，
+     * OPEN 月份動態計算）；若尚未設定年度目標，requiredGreenKwh 以 0 計算，
+     * simulatedGapKwh 恆回傳 0
      *
-     * @param request  模擬請求（假設增加的合約供電量與採購張數）
+     * @param request 模擬請求（假設增加的合約供電量與採購張數）
      */
     @Override
     public SimulationResponse simulate(SimulationRequest request) {
