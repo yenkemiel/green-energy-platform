@@ -46,6 +46,7 @@ public class ContractServiceImpl implements ContractService {
      */
     @Override
     public PageResult<ContractResponse> listContracts(int page, int size, String status, String contractType) {
+        log.info("查詢合約清單，status={}, contractType={}", status, contractType);
         PageHelper.startPage(page + 1, size);
         List<Contract> contracts = contractMapper.selectList(status, contractType);
         PageInfo<Contract> pageInfo = new PageInfo<>(contracts);
@@ -60,6 +61,7 @@ public class ContractServiceImpl implements ContractService {
      */
     @Override
     public ContractResponse getContractById(Long id) {
+        log.info("查詢合約，id={}", id);
         Contract contract =contractMapper.selectById(id);
         if (contract == null) {
             throw new BusinessException(ErrorCode.CONTRACT_NOT_FOUND);
@@ -73,6 +75,7 @@ public class ContractServiceImpl implements ContractService {
      */
     @Override
     public ContractResponse createContract(CreateContractRequest request, Long operatorId) {
+        log.info("建立合約，supplierName={}, operatorId={}", request.getSupplierName(), operatorId);
         if (!request.getEndDate().isAfter(request.getStartDate())) {
             throw new BusinessException(ErrorCode.CONTRACT_DATE_INVALID);
         }
@@ -119,6 +122,7 @@ public class ContractServiceImpl implements ContractService {
      */
     @Override
     public ContractResponse updateContract(Long id, UpdateContractRequest request, Long operatorId) {
+        log.info("修改合約，id={}, operatorId={}", id, operatorId);
         Contract contract = contractMapper.selectById(id);
         if (contract == null) {
             throw new BusinessException(ErrorCode.CONTRACT_NOT_FOUND);
@@ -154,6 +158,7 @@ public class ContractServiceImpl implements ContractService {
      */
     @Override
     public void  terminateContract(Long id, TerminateContractRequest request, Long operatorId) {
+        log.info("終止合約，id={}, operatorId={}", id, operatorId);
         Contract contract = contractMapper.selectById(id);
         if (contract == null) {
             throw new BusinessException(ErrorCode.CONTRACT_NOT_FOUND);

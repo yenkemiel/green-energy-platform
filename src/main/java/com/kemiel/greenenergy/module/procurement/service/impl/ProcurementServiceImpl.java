@@ -58,6 +58,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      */
     @Override
     public ProcurementResponse getProcurementById(Long id) {
+        log.info("查詢採購，id={}", id);
         Procurement procurement = procurementMapper.selectById(id);
         if(procurement == null) {
             throw  new BusinessException(ErrorCode.PROCUREMENT_NOT_FOUND);
@@ -70,7 +71,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      */
     @Override
     public ProcurementResponse createProcurement(CreateProcurementRequest request, Long operatorId) {
-        log.info("建立採購草稿，supplierName={},operator={}", request.getSupplierName(), operatorId);
+        log.info("建立採購草稿，supplierName={}, operatorId={}", request.getSupplierName(), operatorId);
         BigDecimal kwhEquivalent = BigDecimal.valueOf(request.getQuantity())
                                             .multiply(BigDecimal.valueOf(1000));
         BigDecimal totalAmount = request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
@@ -101,7 +102,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      */
     @Override
     public ProcurementResponse updateProcurement(Long id, UpdateProcurementRequest request, Long operatorId) {
-        log.info("修改採購，id={}, operator={}", id, operatorId);
+        log.info("修改採購，id={}, operatorId={}", id, operatorId);
 
         Procurement procurement = procurementMapper.selectById(id);
         if (procurement == null) {
@@ -313,6 +314,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      */
     @Override
     public ProcurementSummaryResponse getSummary() {
+        log.info("查詢憑證庫存總覽");
         LocalDate today = LocalDate.now();
         LocalDate deadline = today.plusDays(30);
         ProcurementSummaryStats stats = procurementMapper.selectSummaryStats(today, deadline);

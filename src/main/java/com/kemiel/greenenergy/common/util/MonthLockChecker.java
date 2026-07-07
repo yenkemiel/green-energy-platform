@@ -6,6 +6,7 @@ import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * 月份鎖定狀態檢查工具，供各模組寫入類 API 呼叫，防止修改已鎖定月份的資料
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MonthLockChecker {
@@ -30,6 +32,7 @@ public class MonthLockChecker {
         ElectricityUsageRecord record = electricityUsageRecordMapper.selectByYearAndMonth(
                 yearMonth.getYear(), yearMonth.getMonthValue());
         if (record != null && ElectricityRecordStatus.LOCKED.name().equals(record.getStatus())) {
+            log.warn("月份已鎖定，拒絕操作，yearMonth={}", yearMonth);
             throw new BusinessException(ErrorCode.ELECTRICITY_RECORD_LOCKED);
         }
     }
@@ -46,6 +49,8 @@ public class MonthLockChecker {
         for (ElectricityUsageRecord record : lockedRecords) {
             YearMonth lockedMonth = YearMonth.of(record.getRecordYear(), record.getRecordMonth());
             if (MonthUtils.isContractActiveInMonth(startDate, endDate, lockedMonth)) {
+                log.warn("合約日期範圍涵蓋鎖定月份，拒絕操作，startDate={}, endDate={}, lockedMonth={}",
+                        startDate, endDate, lockedMonth);
                 throw new BusinessException(ErrorCode.ELECTRICITY_RECORD_LOCKED);
             }
         }

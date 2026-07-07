@@ -113,6 +113,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         record.setCreatedBy(operatorId);
 
         recordMapper.insert(record);
+        log.info("月發電紀錄新增成功，recordId={}", record.getId());
 
         SolarMonthlyRecord saved = recordMapper.selectById(record.getId());
         checkAndTriggerAnomaly(device, saved);
@@ -155,6 +156,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         record.setActualKwh(request.getActualKwh());
         record.setTheoreticalKwh(theoreticalKwh);
         recordMapper.updateById(record);
+        log.info("月發電紀錄修改成功，recordId={}", recordId);
 
         SolarMonthlyRecord updated = recordMapper.selectById(recordId);
         checkAndTriggerAnomaly(device, updated);
