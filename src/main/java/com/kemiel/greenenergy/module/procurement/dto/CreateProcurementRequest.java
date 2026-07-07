@@ -1,5 +1,6 @@
 package com.kemiel.greenenergy.module.procurement.dto;
 
+import com.kemiel.greenenergy.common.enums.SupplyType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,7 @@ public class CreateProcurementRequest {
     private Integer quantity;
 
     @NotNull(message = "憑證年度不可為空")
+    @Min(value = 2000, message = "憑證年度不合理")
     private Integer certificateYear;
 
     @NotNull(message = "每張單價不可為空")
@@ -32,6 +34,6 @@ public class CreateProcurementRequest {
     private LocalDate expectedDate;
     private String notes;
 
-    @NotBlank(message = "供電類型不可為空")
-    private String supplyType;
+    @NotNull(message = "供電類型不可為空")
+    private SupplyType supplyType;
 }

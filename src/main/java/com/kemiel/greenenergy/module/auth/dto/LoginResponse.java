@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * 登入成功回傳 DTO。
+ * 登入成功回傳 DTO
  */
 @Getter
 @Builder

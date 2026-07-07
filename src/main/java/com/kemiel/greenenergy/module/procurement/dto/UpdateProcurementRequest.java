@@ -23,6 +23,7 @@ public class UpdateProcurementRequest {
     private Integer quantity;
 
     @NotNull(message = "憑證年份不可為空")
+    @Min(value = 2000, message = "憑證年度不合理")
     private Integer certificateYear;
 
     @NotNull(message = "每張單價不可為空")

@@ -1,5 +1,6 @@
 package com.kemiel.greenenergy.module.contract.dto;
 
+import com.kemiel.greenenergy.common.enums.ContractType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,8 +18,8 @@ public class CreateContractRequest {
     @NotBlank(message = "供電業者名稱不可為空")
     private String supplierName;
 
-    @NotBlank(message = "合約類型不可為空")
-    private String contractType;
+    @NotNull(message = "合約類型不可為空")
+    private ContractType contractType;
 
     @NotNull(message = "每月供電度數不可為空")
     @DecimalMin(value = "0.0", inclusive = false, message = "每月供電度數必須大於 0")

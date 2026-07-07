@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * 年度目標 Mapper，對應 annual_targets 資料表。
+ * 年度目標 Mapper，對應 annual_targets 資料表
  */
 @Mapper
 public interface AnnualTargetMapper {

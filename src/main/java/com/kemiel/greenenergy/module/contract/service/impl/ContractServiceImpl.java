@@ -77,7 +77,7 @@ public class ContractServiceImpl implements ContractService {
         if (overlapCount > 0) {
             throw new BusinessException(ErrorCode.CONTRACT_OVERLAP);
         }
-        
+
         monthLockChecker.assertNoLockedMonthInRange(request.getStartDate(), request.getEndDate());
 
         BigDecimal monthlyCostSnapshot = request.getRatePerKwh()
@@ -86,7 +86,7 @@ public class ContractServiceImpl implements ContractService {
 
         Contract contract =new Contract();
         contract.setSupplierName(request.getSupplierName());
-        contract.setContractType(request.getContractType());
+        contract.setContractType(request.getContractType().name());
         contract.setMonthlySupplyKwh(request.getMonthlySupplyKwh());
         contract.setStartDate(request.getStartDate());
         contract.setEndDate(request.getEndDate());

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 年度目標服務實作。
+ * 年度目標服務實作
  */
 @Slf4j
 @Service
@@ -37,7 +37,7 @@ public class TargetServiceImpl implements TargetService {
     private final UserMapper userMapper;
 
     /**
-     * 查詢年度目標清單，支援依年度篩選。
+     * 查詢年度目標清單，支援依年度篩選
      */
     @Override
     public PageResult<TargetResponse> listTargets(Integer targetYear, int page ,int size) {
@@ -52,7 +52,7 @@ public class TargetServiceImpl implements TargetService {
     }
 
     /**
-     * 建立年度目標，同年度不可重複。
+     * 建立年度目標，同年度不可重複
      */
     @Override
     public TargetResponse createTarget(CreateTargetRequest request, Long operatorId) {
@@ -74,7 +74,7 @@ public class TargetServiceImpl implements TargetService {
     }
 
     /**
-     * 修改年度目標內容，不可修改年度。
+     * 修改年度目標內容，不可修改年度
      */
     @Override
     public TargetResponse updateTarget(Long id, UpdateTargetRequest request, Long operatorId) {
@@ -109,7 +109,7 @@ public class TargetServiceImpl implements TargetService {
     }
 
     /**
-     * 軟刪除年度目標。
+     * 軟刪除年度目標
      */
     @Override
     public void deleteTarget(Long id) {

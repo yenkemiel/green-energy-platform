@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class CreateSolarMonthlyRecordRequest {
 
     @NotNull(message = "年份不可為空")
+    @Min(value = 2000, message = "記錄年份不合理")
     private Integer recordYear;
 
     @NotNull(message = "月份不可為空")

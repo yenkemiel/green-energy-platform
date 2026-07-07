@@ -85,7 +85,7 @@ public class ProcurementServiceImpl implements ProcurementService {
         procurement.setStatus(ProcurementStatus.DRAFT.name());
         procurement.setExpectedDate(request.getExpectedDate());
         procurement.setNotes(request.getNotes());
-        procurement.setSupplyType(request.getSupplyType());
+        procurement.setSupplyType(request.getSupplyType().name());
         procurement.setIsVoid(0);
         procurement.setCreatedBy(operatorId);
         procurement.setUpdatedBy(operatorId);

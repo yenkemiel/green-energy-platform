@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 /**
- * 登入請求 DTO。
+ * 登入請求 DTO
  */
 @Getter
 public class LoginRequest {

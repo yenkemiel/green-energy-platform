@@ -2,21 +2,24 @@ package com.kemiel.greenenergy.module.target.dto;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 
 /**
- * 建立年度目標的請求格式。
+ * 建立年度目標的請求格式
  */
 @Getter
 public class CreateTargetRequest {
 
     @NotNull(message = "目標年度不可為空")
+    @Min(value = 2000, message = "目標年度不合理")
     private Integer targetYear;
 
     @NotNull(message = "年度用電量不可為空")
+    @DecimalMin(value = "0.0", inclusive = false, message = "年度用電量必須大於 0")
     private BigDecimal annualElectricityKwh;
 
     @NotNull(message = "RE100 目標比例不可為空")

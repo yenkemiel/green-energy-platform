@@ -7,7 +7,7 @@ import com.kemiel.greenenergy.module.target.dto.TargetResponse;
 import com.kemiel.greenenergy.module.target.dto.UpdateTargetRequest;
 
 /**
- * 年度目標服務介面。
+ * 年度目標服務介面
  */
 public interface TargetService {
     PageResult<TargetResponse> listTargets(Integer targetYear, int page, int size);

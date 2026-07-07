@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 年度綠電目標設定，對應 annual_targets 資料表。
+ * 年度綠電目標設定，對應 annual_targets 資料表
  */
 @Data
 public class AnnualTarget {
