@@ -74,7 +74,7 @@ public class TargetServiceImpl implements TargetService {
     }
 
     /**
-     * 修改年度目標內容，不可修改年度
+     * 修改年度目標內容（targetYear 不可變更），並寫入 Audit Log 記錄異動前後值
      */
     @Override
     public TargetResponse updateTarget(Long id, UpdateTargetRequest request, Long operatorId) {
@@ -122,6 +122,10 @@ public class TargetServiceImpl implements TargetService {
         log.info("年度目標刪除完成，id={}", id);
     }
 
+    /**
+     * 將 AnnualTarget entity 轉為 TargetResponse，轉換過程即時計算 requiredGreenKwh
+     * （annualElectricityKwh × re100TargetRatio）
+     */
     private TargetResponse toResponse(AnnualTarget target) {
         BigDecimal requiredGreenKwh = target.getAnnualElectricityKwh()
                 .multiply(target.getRe100TargetRatio())

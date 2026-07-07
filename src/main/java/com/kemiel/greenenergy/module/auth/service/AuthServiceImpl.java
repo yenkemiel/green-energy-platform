@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
- * 認證服務，處理使用者登入與登出邏輯
+ * 認證服務，處理使用者登入邏輯
  */
 @Slf4j
 @Service
@@ -24,7 +24,8 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * 使用者登入，驗證帳號密碼並回傳 JWT Token
+     * 使用者登入，驗證帳號密碼並回傳 JWT Token；帳號不存在或已停用一律回傳
+     * INVALID_CREDENTIALS，不透露具體原因，避免帳號列舉攻擊
      */
     @Override
     public LoginResponse login(LoginRequest request){
