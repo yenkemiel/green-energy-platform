@@ -26,7 +26,7 @@ public class ProcurementPresetServiceImpl implements ProcurementPresetService {
     private final ProcurementPresetMapper procurementPresetMapper;
 
     /**
-     * 查詢所有啟用中的採購預設方案清單
+     * 查詢全部採購預設方案清單（含已停用），供快速建立採購選用與方案管理／重新啟用使用
      */
     @Override
     public List<ProcurementPresetResponse> listPresets() {

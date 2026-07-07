@@ -75,7 +75,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     }
 
     /**
-     * 新增月發電紀錄，並計算理論發電量快照
+     * 新增月發電紀錄，計算理論發電量快照；寫入前檢查月份鎖定與補填截止期限，寫入後觸發異常偵測
      */
     @Override
     public SolarMonthlyRecordResponse createRecord(Long deviceId,
@@ -122,7 +122,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     }
 
     /**
-     * 修改月發電紀錄，並重新計算理論發電量快照
+     * 修改月發電紀錄並重新計算理論發電量快照；修改前檢查月份鎖定與補填截止期限，
+     * 修改後觸發異常偵測並寫入 Audit Log
      */
     @Override
     public SolarMonthlyRecordResponse updateRecord(Long deviceId, Long recordId,

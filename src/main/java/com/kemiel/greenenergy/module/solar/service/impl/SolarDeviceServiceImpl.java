@@ -88,6 +88,9 @@ public class SolarDeviceServiceImpl implements SolarDeviceService {
         log.info("太陽能設備狀態更新完成，id={}, status={}", id, request.getStatus());
     }
 
+    /**
+     * 將 SolarDevice entity 轉為 SolarDeviceResponse，理論月發電量依查詢當下月份天數即時計算
+     */
     private SolarDeviceResponse toResponse(SolarDevice device) {
         int daysInMonth = YearMonth.now().lengthOfMonth();
         BigDecimal theoreticalMonthlyKwh = device.getCapacityKw()

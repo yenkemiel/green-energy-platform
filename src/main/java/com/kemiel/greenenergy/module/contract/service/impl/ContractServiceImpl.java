@@ -28,6 +28,9 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 合約管理 Service 實作
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -65,7 +68,8 @@ public class ContractServiceImpl implements ContractService {
     }
 
     /**
-     * 建立合約，計算月成本快照並檢查同業者期間重疊
+     * 建立合約，驗證日期順序、檢查同業者期間重疊與月份鎖定衝突，
+     * 計算月成本快照並寫入 Audit Log
      */
     @Override
     public ContractResponse createContract(CreateContractRequest request, Long operatorId) {
@@ -111,7 +115,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     /**
-     * 修改合約（僅限 ACTIVE 狀態，費率不可變更）
+     * 修改合約（僅限 ACTIVE 狀態，費率不可變更），檢查修改區間是否涵蓋已鎖定月份
      */
     @Override
     public ContractResponse updateContract(Long id, UpdateContractRequest request, Long operatorId) {
@@ -146,7 +150,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     /**
-     * 手動終止合約，寫入終止時間與操作者
+     * 手動終止合約（status -> TERMINATED），檢查終止月份是否已鎖定，並寫入 Audit Log
      */
     @Override
     public void  terminateContract(Long id, TerminateContractRequest request, Long operatorId) {

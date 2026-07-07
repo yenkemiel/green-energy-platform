@@ -233,7 +233,8 @@ public class ProcurementServiceImpl implements ProcurementService {
     }
 
     /**
-     * 完成採購，處理中狀態改為已完成，寫入完成日期並計算 purchase_month 與 expiry_date
+     * 完成採購(IN_PROGRESS -> COMPLETED)，檢查完成月份是否已鎖定，
+     * 並自動計算 purchaseMonth 與 expiryDate（完成日加兩年）
      */
     @Override
     public void completeProcurement(Long id, CompleteProcurementRequest request, Long operatorId) {
@@ -272,7 +273,8 @@ public class ProcurementServiceImpl implements ProcurementService {
     }
 
     /**
-     * 作廢採購，已完成狀態改為作廢並標記 is_void
+     * 作廢採購(COMPLETED -> VOID)，檢查該筆採購原始完成日所屬月份是否已鎖定，
+     * 並標記 isVoid = 1
      */
     @Override
     public void voidProcurement(Long id, Long operatorId) {
