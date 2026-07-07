@@ -248,6 +248,7 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
         int n = monthlyRates.size();
 
         if (n < 3) {
+            log.info("資料不足，無法預測，basedOnMonths={}", n);
             return PredictionResult.builder()
                     .predictable(false)
                     .basedOnMonths(n)

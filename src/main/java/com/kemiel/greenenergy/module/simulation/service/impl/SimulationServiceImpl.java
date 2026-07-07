@@ -39,7 +39,8 @@ public class SimulationServiceImpl implements SimulationService {
      */
     @Override
     public SimulationResponse simulate(SimulationRequest request) {
-        log.info("執行 RE100 達成模擬，request={}", request);
+        log.info("執行 RE100 達成模擬，additionalContractKwh={}, additionalProcurementQuantity={}",
+                request.getAdditionalContractKwh(), request.getAdditionalProcurementQuantity());
 
         int currentYear = LocalDate.now().getYear();
         int currentMonth = LocalDate.now().getMonthValue();
