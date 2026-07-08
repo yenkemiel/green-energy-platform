@@ -32,15 +32,14 @@ public class SimulationServiceImpl implements SimulationService {
 
     /**
      * 執行 RE100 達成模擬，彙整今年 1 月至當月的實際綠電量（LOCKED 月份讀 snapshot，
-     * OPEN 月份動態計算）；若尚未設定年度目標，requiredGreenKwh 以 0 計算，
-     * simulatedGapKwh 恆回傳 0
+     * OPEN 月份動態計算）；若尚未設定年度目標，requiredGreenKwh 與 simulatedGapKwh
+     * 皆回傳 null，語意與 DashboardServiceImpl 無目標情境一致
      *
      * @param request 模擬請求（假設增加的合約供電量與採購張數）
      */
     @Override
     public SimulationResponse simulate(SimulationRequest request) {
-        log.info("執行 RE100 達成模擬，additionalContractKwh={}, additionalProcurementQuantity={}",
-                request.getAdditionalContractKwh(), request.getAdditionalProcurementQuantity());
+        log.info("執行 RE100 達成模擬，request={}", request);
 
         int currentYear = LocalDate.now().getYear();
         int currentMonth = LocalDate.now().getMonthValue();
@@ -68,7 +67,7 @@ public class SimulationServiceImpl implements SimulationService {
         BigDecimal requiredGreenKwh = (target != null)
                 ? calculationService.calculateRequiredGreenKwh(
                 target.getAnnualElectricityKwh(), target.getRe100TargetRatio())
-                : BigDecimal.ZERO;
+                : null;
 
         SimulationResult result = calculationService.simulate(
                 totalGreenKwh,

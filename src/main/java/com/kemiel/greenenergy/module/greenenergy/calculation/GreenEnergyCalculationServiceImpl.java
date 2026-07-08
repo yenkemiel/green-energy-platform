@@ -357,8 +357,9 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
                 calculateAchievementRate(currentGreenKwh, currentUsageKwh);
         BigDecimal simulatedAchievementRate =
                 calculateAchievementRate(simulatedTotalGreenKwh, currentUsageKwh);
-        BigDecimal simulatedGapKwh =
-                calculateGap(requiredGreenKwh, simulatedTotalGreenKwh);
+        BigDecimal simulatedGapKwh = (requiredGreenKwh != null)
+                ? calculateGap(requiredGreenKwh, simulatedTotalGreenKwh)
+                : null;
 
         return SimulationResult.builder()
                 .currentGreenKwh(currentGreenKwh)
