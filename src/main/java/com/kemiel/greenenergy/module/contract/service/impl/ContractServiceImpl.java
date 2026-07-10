@@ -118,7 +118,9 @@ public class ContractServiceImpl implements ContractService {
     }
 
     /**
-     * 修改合約（僅限 ACTIVE 狀態，費率不可變更），檢查修改區間是否涵蓋已鎖定月份
+     * 修改合約（僅限 ACTIVE 狀態，費率不可變更），檢查修改區間是否涵蓋已鎖定月份；
+     * 供電區間若有變動，一併檢查舊區間是否涵蓋已鎖定月份，避免把鎖定月份移出區間
+     * 而改變其已凍結的數字
      */
     @Override
     public ContractResponse updateContract(Long id, UpdateContractRequest request, Long operatorId) {
@@ -140,6 +142,14 @@ public class ContractServiceImpl implements ContractService {
         }
 
         monthLockChecker.assertNoLockedMonthInRange(request.getStartDate(), request.getEndDate());
+
+        boolean rangeChanged = !contract.getStartDate().equals(request.getStartDate())
+                || !contract.getEndDate().equals(request.getEndDate());
+        if (rangeChanged) {
+            log.info("合約供電區間變動，一併檢查舊區間鎖定狀態，contractId={}, oldStartDate={}, oldEndDate={}",
+                    id, contract.getStartDate(), contract.getEndDate());
+            monthLockChecker.assertNoLockedMonthInRange(contract.getStartDate(), contract.getEndDate());
+        }
 
         contract.setSupplierName(request.getSupplierName());
         contract.setMonthlySupplyKwh(request.getMonthlySupplyKwh());
