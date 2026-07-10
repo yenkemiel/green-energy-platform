@@ -108,7 +108,7 @@ public class ProcurementServiceImpl implements ProcurementService {
         if (procurement == null) {
             throw new BusinessException(ErrorCode.PROCUREMENT_NOT_FOUND);
         }
-        if(!ProcurementStatus.DRAFT.name().equals(procurement.getStatus())) {
+        if (!ProcurementStatus.DRAFT.name().equals(procurement.getStatus())) {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
@@ -126,9 +126,14 @@ public class ProcurementServiceImpl implements ProcurementService {
         procurement.setNotes(request.getNotes());
         procurement.setUpdatedBy(operatorId);
 
-        procurementMapper.updateById(procurement);
+        int updated = procurementMapper.updateById(procurement, ProcurementStatus.DRAFT.name());
+        if (updated == 0) {
+            log.warn("採購修改失敗，狀態已被其他操作變更，id={}, expectedStatus={}",
+                    id, ProcurementStatus.DRAFT.name());
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
-        log.info("採購修改成功，id={}",id);
+        log.info("採購修改成功，id={}", id);
         return toResponse(procurementMapper.selectById(id));
     }
 
@@ -147,7 +152,13 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
-        procurementMapper.updateStatusById(id, ProcurementStatus.SUBMITTED.name(), operatorId);
+        int updated = procurementMapper.updateStatusById(
+                id, ProcurementStatus.SUBMITTED.name(), ProcurementStatus.DRAFT.name(), operatorId);
+        if (updated == 0) {
+            log.warn("送出採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}",
+                    id, ProcurementStatus.DRAFT.name());
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         auditLogHelper.log(
@@ -173,7 +184,12 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
-        procurementMapper.updateStatusById(id, ProcurementStatus.CANCELLED.name(), operatorId);
+        int updated = procurementMapper.updateStatusById(
+                id, ProcurementStatus.CANCELLED.name(), status, operatorId);
+        if (updated == 0) {
+            log.warn("取消採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}", id, status);
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         auditLogHelper.log(
@@ -198,7 +214,13 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
-        procurementMapper.updateStatusById(id, ProcurementStatus.APPROVED.name(), operatorId);
+        int updated = procurementMapper.updateStatusById(
+                id, ProcurementStatus.APPROVED.name(), ProcurementStatus.SUBMITTED.name(), operatorId);
+        if (updated == 0) {
+            log.warn("審核採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}",
+                    id, ProcurementStatus.SUBMITTED.name());
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         auditLogHelper.log(
@@ -223,7 +245,13 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
-        procurementMapper.updateStatusById(id, ProcurementStatus.IN_PROGRESS.name(), operatorId);
+        int updated = procurementMapper.updateStatusById(
+                id, ProcurementStatus.IN_PROGRESS.name(), ProcurementStatus.APPROVED.name(), operatorId);
+        if (updated == 0) {
+            log.warn("開始處理採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}",
+                    id, ProcurementStatus.APPROVED.name());
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         auditLogHelper.log(
@@ -263,7 +291,11 @@ public class ProcurementServiceImpl implements ProcurementService {
         procurement.setExpiryDate(expiryDate);
         procurement.setUpdatedBy(operatorId);
 
-        procurementMapper.updateById(procurement);
+        int updated = procurementMapper.updateById(procurement, oldStatus);
+        if (updated == 0) {
+            log.warn("完成採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}", id, oldStatus);
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         auditLogHelper.log(
@@ -297,7 +329,12 @@ public class ProcurementServiceImpl implements ProcurementService {
         procurement.setStatus(ProcurementStatus.VOID.name());
         procurement.setIsVoid(1);
         procurement.setUpdatedBy(operatorId);
-        procurementMapper.updateById(procurement);
+
+        int updated = procurementMapper.updateById(procurement, oldStatus);
+        if (updated == 0) {
+            log.warn("作廢採購失敗，狀態已被其他操作變更，id={}, expectedStatus={}", id, oldStatus);
+            throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
+        }
 
         User operator = userMapper.selectById(operatorId);
         String voidBeforeValue = String.format(

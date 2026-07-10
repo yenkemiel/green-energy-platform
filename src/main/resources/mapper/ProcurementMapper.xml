@@ -44,32 +44,34 @@
 
     <update id="updateById">
         UPDATE procurements
-        SET supplier_name    = #{supplierName},
-            quantity         = #{quantity},
-            kwh_equivalent   = #{kwhEquivalent},
-            certificate_year = #{certificateYear},
-            unit_price       = #{unitPrice},
-            total_amount     = #{totalAmount},
-            status           = #{status},
-            expected_date    = #{expectedDate},
-            completed_date   = #{completedDate},
-            purchase_month   = #{purchaseMonth},
-            expiry_date      = #{expiryDate},
-            is_void          = #{isVoid},
-            notes            = #{notes},
-            updated_by       = #{updatedBy},
-            updated_at       = NOW()
-        WHERE id = #{id}
-            AND is_deleted = 0
+        SET supplier_name    = #{procurement.supplierName},
+        quantity         = #{procurement.quantity},
+        kwh_equivalent   = #{procurement.kwhEquivalent},
+        certificate_year = #{procurement.certificateYear},
+        unit_price       = #{procurement.unitPrice},
+        total_amount     = #{procurement.totalAmount},
+        status           = #{procurement.status},
+        expected_date    = #{procurement.expectedDate},
+        completed_date   = #{procurement.completedDate},
+        purchase_month   = #{procurement.purchaseMonth},
+        expiry_date      = #{procurement.expiryDate},
+        is_void          = #{procurement.isVoid},
+        notes            = #{procurement.notes},
+        updated_by       = #{procurement.updatedBy},
+        updated_at       = NOW()
+        WHERE id = #{procurement.id}
+        AND status = #{expectedStatus}   <!-- 新增條件 -->
+        AND is_deleted = 0
     </update>
 
     <update id="updateStatusById">
         UPDATE procurements
-        SET status = #{status},
-            updated_by = #{updatedBy},
-            updated_at = NOW()
+        SET status     = #{status},
+        updated_by = #{updatedBy},
+        updated_at = NOW()
         WHERE id = #{id}
-            AND is_deleted  = 0
+        AND status = #{expectedStatus}   <!-- 新增條件 -->
+        AND is_deleted = 0
     </update>
 
     <select id="selectSummaryStats" resultType="com.kemiel.greenenergy.module.procurement.dto.ProcurementSummaryStats">

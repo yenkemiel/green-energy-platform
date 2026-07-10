@@ -22,10 +22,20 @@ public interface ProcurementMapper {
 
     int insert(Procurement procurement);
 
-    int updateById(Procurement procurement);
+    /**
+     * 更新採購內容，以 expectedStatus 作為更新條件防止並發下的狀態覆蓋，
+     * 回傳實際更新筆數（0 表示狀態已被其他操作變更）。
+     */
+    int updateById(@Param("procurement") Procurement procurement,
+                   @Param("expectedStatus") String expectedStatus);
 
+    /**
+     * 更新採購狀態，以 expectedStatus 作為更新條件防止並發下的重複流轉，
+     * 回傳實際更新筆數（0 表示狀態已被其他操作變更）。
+     */
     int updateStatusById(@Param("id") Long id,
                          @Param("status") String status,
+                         @Param("expectedStatus") String expectedStatus,
                          @Param("updatedBy") Long updatedBy);
 
     ProcurementSummaryStats selectSummaryStats(@Param("today") LocalDate today,
