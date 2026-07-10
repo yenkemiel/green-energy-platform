@@ -223,7 +223,9 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
 
     /**
      * 以線性回歸外推年底預估達成率，僅取月份連續序列（遇第一個缺漏月份即停止累積），
-     * 未達年底的月份以外推值補全並限縮在 [0, 1]
+     * 未達年底的月份以外推值補全並限縮在 [0, 1]；預估年底缺口以年度預估用電量
+     * （非已依目標比例折算的 requiredGreenKwh）乘以預估達成率推導預估綠電量，
+     * 再與 requiredGreenKwh 計算差額，避免目標比例重複套用導致缺口失真
      *
      * @param year 目標年度
      */
@@ -302,8 +304,9 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
         if (target != null) {
             BigDecimal requiredGreenKwh = calculateRequiredGreenKwh(
                     target.getAnnualElectricityKwh(), target.getRe100TargetRatio());
-            BigDecimal predictedYearEndGreenKwh =
-                    requiredGreenKwh.multiply(predictedYearEndRate);
+            BigDecimal predictedYearEndGreenKwh = target.getAnnualElectricityKwh()
+                    .multiply(predictedYearEndRate)
+                    .setScale(4, RoundingMode.HALF_UP);
             predictedYearEndGapKwh = calculateGap(requiredGreenKwh, predictedYearEndGreenKwh);
         }
 
