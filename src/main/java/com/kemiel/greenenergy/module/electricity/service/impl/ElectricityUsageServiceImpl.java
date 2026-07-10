@@ -12,6 +12,7 @@ import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
 import com.kemiel.greenenergy.module.electricity.service.ElectricityUsageService;
 import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
+import com.kemiel.greenenergy.module.greenenergy.calculation.dto.CompletenessResult;
 import com.kemiel.greenenergy.module.user.entity.User;
 import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -115,8 +116,9 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     }
 
     /**
-     * 鎖定指定月份（status -> LOCKED），並觸發 GreenEnergyCalculationService 計算並寫入
-     * monthly_summary_snapshot；全程於 @Transactional 內執行，鎖定後寫入 Audit Log
+     * 鎖定指定月份（status -> LOCKED），鎖定前檢查當月資料完整度（太陽能與用電量皆已填），
+     * 未完整則拋出 MONTH_NOT_COMPLETE；通過後觸發計算並寫入 snapshot；
+     * 全程於 @Transactional 內執行，鎖定後寫入 Audit Log
      */
     @Override
     @Transactional
@@ -129,6 +131,15 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
         }
         if (ElectricityRecordStatus.LOCKED.name().equals(record.getStatus())) {
             throw new BusinessException(ErrorCode.MONTH_ALREADY_LOCKED);
+        }
+
+        CompletenessResult completeness = greenEnergyCalculationService.checkCompleteness(
+                record.getRecordYear(), record.getRecordMonth());
+        if (!completeness.isCanLock()) {
+            log.warn("當月資料尚未完整，拒絕鎖定，year={}, month={}, solarFilled={}, usageFilled={}",
+                    record.getRecordYear(), record.getRecordMonth(),
+                    completeness.isSolarFilled(), completeness.isUsageFilled());
+            throw new BusinessException(ErrorCode.MONTH_NOT_COMPLETE);
         }
 
         LocalDateTime lockedAt = LocalDateTime.now();
