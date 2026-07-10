@@ -83,7 +83,10 @@
     <select id="selectSumMonthlySupplyKwhByMonth" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(monthly_supply_kwh), 0)
         FROM contracts
-        WHERE status = 'ACTIVE'
+        WHERE (
+        status = 'ACTIVE'
+        OR (status = 'TERMINATED' AND DATE(terminated_at) &gt; #{lastDay})
+        )
         AND start_date &lt;= #{lastDay}
         AND end_date &gt;= #{firstDay}
         AND is_deleted = 0
@@ -95,12 +98,16 @@
         contract_type AS contractType,
         COALESCE(SUM(monthly_supply_kwh), 0) AS kwh
         FROM contracts
-        WHERE status = 'ACTIVE'
+        WHERE (
+        status = 'ACTIVE'
+        OR (status = 'TERMINATED' AND DATE(terminated_at) &gt; #{lastDay})
+        )
         AND start_date &lt;= #{lastDay}
         AND end_date &gt;= #{firstDay}
         AND is_deleted = 0
         GROUP BY contract_type
     </select>
+
     <select id="selectActiveContractStats"
             resultType="com.kemiel.greenenergy.module.contract.dto.ContractActiveStats">
         SELECT
@@ -108,6 +115,7 @@
         COALESCE(SUM(monthly_supply_kwh), 0) AS monthlyGuaranteedKwh
         FROM contracts
         WHERE status = 'ACTIVE'
+        AND end_date &gt;= #{today}
         AND is_deleted = 0
     </select>
 

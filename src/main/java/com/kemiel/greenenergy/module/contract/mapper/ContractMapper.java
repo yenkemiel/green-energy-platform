@@ -42,7 +42,7 @@ public interface ContractMapper {
     List<ContractKwhByType> selectSumKwhGroupByType(@Param("firstDay") LocalDate firstDay,
                                                     @Param("lastDay") LocalDate lastDay);
 
-    ContractActiveStats selectActiveContractStats();
+    ContractActiveStats selectActiveContractStats(@Param("today") LocalDate today);
 
     List<Contract> selectExpiringContracts(@Param("thresholdDate") LocalDate thresholdDate);
 

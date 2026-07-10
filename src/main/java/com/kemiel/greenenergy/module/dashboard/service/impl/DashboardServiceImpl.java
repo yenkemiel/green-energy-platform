@@ -142,7 +142,7 @@ public class DashboardServiceImpl implements DashboardService {
      * 組裝待處理事項，含履約合約、採購進度、缺漏資料、即將到期合約
      */
     private PendingItemsResponse buildPendingItems(LocalDate today) {
-        ContractActiveStats stats = contractMapper.selectActiveContractStats();
+        ContractActiveStats stats = contractMapper.selectActiveContractStats(today);  // 原本呼叫無參數
         int inProgressProcurements = procurementMapper.countInProgress();
 
         List<String> missingDataItems = new ArrayList<>();
