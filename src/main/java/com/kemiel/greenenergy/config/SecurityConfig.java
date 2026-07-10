@@ -17,7 +17,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring Security 設定，定義 Filter 鏈規則、路徑權限與密碼加密器。
+ * Spring Security 設定，定義 Filter 鏈規則、路徑權限與密碼加密器
  */
 @Configuration
 @EnableWebSecurity
@@ -30,7 +30,7 @@ public class SecurityConfig {
     private final AccessDeniedHandler accessDeniedHandler;
 
     /**
-     * 設定 Security Filter 鏈，包含 CSRF 關閉、Stateless Session、路徑權限與 JWT Filter 插入位置。
+     * 設定 Security Filter 鏈，包含 CSRF 關閉、Stateless Session、路徑權限與 JWT Filter 插入位置
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

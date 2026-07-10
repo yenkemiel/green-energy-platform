@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 /**
- * 月份相關工具類，提供補填截止判斷、合約有效性判斷與當前歸屬月份計算。
+ * 月份相關工具類，提供補填截止判斷、合約有效性判斷與當前歸屬月份計算
  */
 public class MonthUtils {
 
@@ -13,7 +13,7 @@ public class MonthUtils {
     private MonthUtils() {}
 
     /**
-     * 判斷指定月份是否仍在可補填期間（次月 5 號含當天）。
+     * 判斷指定月份是否仍在可補填期間（次月 5 號含當天）
      *
      * @param yearMonth 欲判斷的月份
      * @return 可補填回傳 true，已超過截止日回傳 false
@@ -25,7 +25,7 @@ public class MonthUtils {
     }
 
     /**
-     * 判斷合約在指定月份是否有效（合約期間與該月份有任何重疊即視為有效）。
+     * 判斷合約在指定月份是否有效（合約期間與該月份有任何重疊即視為有效）
      */
     public static boolean isContractActiveInMonth(LocalDate startDate, LocalDate endDate, YearMonth month) {
         LocalDate monthStart = month.atDay(1);
@@ -34,7 +34,7 @@ public class MonthUtils {
     }
 
     /**
-     * 取得當前歸屬月份，5 號含當天以前回傳上個月，6 號以後回傳本月。
+     * 取得當前歸屬月份，5 號含當天以前回傳上個月，6 號以後回傳本月
      *
      * @return 當前歸屬月份
      */

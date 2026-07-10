@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Jackson 全域序列化設定，指定 Java 8 時間型別的輸出格式。
+ * Jackson 全域序列化設定，指定 Java 8 時間型別的輸出格式
  */
 @Configuration
 public class JacksonConfig {
@@ -20,7 +20,7 @@ public class JacksonConfig {
     private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
-     * 擴充 Jackson ObjectMapper，明確指定 LocalDate、LocalDateTime 序列化格式。
+     * 擴充 Jackson ObjectMapper，明確指定 LocalDate、LocalDateTime 序列化格式
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {

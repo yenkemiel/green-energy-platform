@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Swagger OpenAPI 設定，提供 API 文件與 Bearer JWT 驗證支援。
+ * Swagger OpenAPI 設定，提供 API 文件與 Bearer JWT 驗證支援
  */
 @Configuration
 public class SwaggerConfig {

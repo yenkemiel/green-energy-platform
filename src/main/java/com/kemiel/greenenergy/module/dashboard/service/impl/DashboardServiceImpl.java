@@ -55,7 +55,7 @@ public class DashboardServiceImpl implements DashboardService {
         log.info("查詢缺口儀表板，period={}", period);
 
         LocalDate today = LocalDate.now();
-        int targetYear = today.getYear();
+        int targetYear = resolveTargetYear(period, today);
         List<Integer> months = resolveMonths(period, today);
 
         BigDecimal totalGreenKwh = BigDecimal.ZERO;
@@ -180,4 +180,15 @@ public class DashboardServiceImpl implements DashboardService {
                 .expiringContracts(expiringItems)
                 .build();
     }
+
+    /**
+     * 根據 period 解析彙整目標年份，LAST_YEAR 回傳去年，其餘 period 一律回傳今年
+     */
+    private int resolveTargetYear(String period, LocalDate today) {
+        if ("LAST_YEAR".equals(period)) {
+            return today.getYear() - 1;
+        }
+        return today.getYear();
+    }
+
 }

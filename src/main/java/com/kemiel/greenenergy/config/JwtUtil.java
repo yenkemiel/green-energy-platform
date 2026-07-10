@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
- * JWT 工具類，負責 Token 的簽發、解析與有效性驗證。
+ * JWT 工具類，負責 Token 的簽發、解析與有效性驗證
  */
 @Slf4j
 @Component
@@ -29,7 +29,7 @@ public class JwtUtil {
     private long expiration;
 
     /**
-     * 應用程式啟動時驗證 JWT Secret 長度，不足 32 字元時中止啟動。
+     * 應用程式啟動時驗證 JWT Secret 長度，不足 32 字元時中止啟動
      */
     @PostConstruct
     public void validateSecret() {
@@ -45,7 +45,7 @@ public class JwtUtil {
     }
 
     /**
-     * 簽發 JWT Token，Payload 包含 userId、username、role。
+     * 簽發 JWT Token，Payload 包含 userId、username、role
      */
     public String generateToken(Long userId, String username, String role) {
         return Jwts.builder()
@@ -70,7 +70,7 @@ public class JwtUtil {
     }
 
     /**
-     * 驗證 JWT Token 是否有效，過期、格式錯誤或簽名驗證失敗皆回傳 false。
+     * 驗證 JWT Token 是否有效，過期、格式錯誤或簽名驗證失敗皆回傳 false
      */
     public boolean isTokenValid(String token) {
         try {

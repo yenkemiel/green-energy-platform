@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * 系統啟動時自動初始化 ADMIN 帳號。
+ * 系統啟動時自動初始化 ADMIN 帳號
  */
 @Slf4j
 @Component

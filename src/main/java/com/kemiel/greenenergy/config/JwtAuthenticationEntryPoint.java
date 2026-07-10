@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * JWT 未認證例外處理器，當請求未帶有效 Token 時回傳 401 與統一錯誤格式。
+ * JWT 未認證例外處理器，當請求未帶有效 Token 時回傳 401 與統一錯誤格式
  */
 @Component
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper;
 
     /**
-     * 處理未認證請求，回傳 HTTP 401 與 ApiResponse 格式的錯誤訊息。
+     * 處理未認證請求，回傳 HTTP 401 與 ApiResponse 格式的錯誤訊息
      *
      * @param request       HTTP 請求
      * @param response      HTTP 回應

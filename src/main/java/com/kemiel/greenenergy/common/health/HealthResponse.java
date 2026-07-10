@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 /**
- * 健康檢查回傳資料。
+ * 健康檢查回傳資料
  */
 @Getter
 @Builder

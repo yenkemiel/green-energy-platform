@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 /**
- * 健康檢查端點，供 GCP Cloud Run 確認服務存活狀態。
+ * 健康檢查端點，供 GCP Cloud Run 確認服務存活狀態
  */
 @Tag(name = "健康檢查", description = "GCP Cloud Run 健康檢查")
 @RestController
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class HealthController {
 
     /**
-     * 回傳服務存活狀態與當前時間戳。
+     * 回傳服務存活狀態與當前時間戳
      *
      * @return 健康檢查結果
      */

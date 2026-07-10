@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * JWT 驗證 Filter，每個請求僅執行一次。
- * 從 Authorization header 解析 Bearer Token，驗證成功後將使用者身份寫入 SecurityContextHolder。
+ * JWT 驗證 Filter，每個請求僅執行一次
+ * 從 Authorization header 解析 Bearer Token，驗證成功後將使用者身份寫入 SecurityContextHolder
  */
 @Slf4j
 @Component

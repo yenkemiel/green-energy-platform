@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 全域 CORS 設定，允許 Vue 前端跨來源存取 API。
+ * 全域 CORS 設定，允許 Vue 前端跨來源存取 API
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
