@@ -23,6 +23,7 @@ import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -128,6 +129,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
      * 修改月發電紀錄並重新計算理論發電量快照；修改前檢查月份鎖定與補填截止期限，
      * 修改後觸發異常偵測並寫入 Audit Log
      */
+    @Transactional
     @Override
     public SolarMonthlyRecordResponse updateRecord(Long deviceId, Long recordId,
                                                    UpdateSolarMonthlyRecordRequest request,

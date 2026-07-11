@@ -18,6 +18,7 @@ import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -76,6 +77,7 @@ public class TargetServiceImpl implements TargetService {
     /**
      * 修改年度目標內容（targetYear 不可變更），並寫入 Audit Log 記錄異動前後值
      */
+    @Transactional
     @Override
     public TargetResponse updateTarget(Long id, UpdateTargetRequest request, Long operatorId) {
         log.info("修改年度目標，id={}, operatorId={}", id, operatorId);

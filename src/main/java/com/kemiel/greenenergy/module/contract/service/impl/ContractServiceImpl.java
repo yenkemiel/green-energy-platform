@@ -21,6 +21,7 @@ import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -73,6 +74,7 @@ public class ContractServiceImpl implements ContractService {
      * 建立合約，驗證日期順序、檢查同業者期間重疊與月份鎖定衝突，
      * 計算月成本快照並寫入 Audit Log
      */
+    @Transactional
     @Override
     public ContractResponse createContract(CreateContractRequest request, Long operatorId) {
         log.info("建立合約，supplierName={}, operatorId={}", request.getSupplierName(), operatorId);
@@ -166,6 +168,7 @@ public class ContractServiceImpl implements ContractService {
     /**
      * 手動終止合約（status -> TERMINATED），檢查終止月份是否已鎖定，並寫入 Audit Log
      */
+    @Transactional
     @Override
     public void  terminateContract(Long id, TerminateContractRequest request, Long operatorId) {
         log.info("終止合約，id={}, operatorId={}", id, operatorId);

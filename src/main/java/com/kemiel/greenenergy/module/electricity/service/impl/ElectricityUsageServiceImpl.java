@@ -84,6 +84,7 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     /**
      * 修改指定月份的用電量數值，已鎖定或超過補填截止期限不可修改，修改後寫入 Audit Log
      */
+    @Transactional
     @Override
     public ElectricityUsageResponse updateRecord(Long id, UpdateElectricityUsageRequest request, Long operatorId) {
         log.info("修改月用電量，id={}, operatorId={}", id, operatorId);

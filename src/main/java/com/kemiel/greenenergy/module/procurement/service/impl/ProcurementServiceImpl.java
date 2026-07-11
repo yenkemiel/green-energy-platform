@@ -19,6 +19,7 @@ import com.kemiel.greenenergy.module.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -140,6 +141,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     /**
      * 送出採購，草稿狀態改為已送出
      */
+    @Transactional
     @Override
     public void submitProcurement(Long id, Long operatorId) {
         log.info("送出採購，id={}, operatorId={}", id, operatorId);
@@ -171,6 +173,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     /**
      * 取消採購，草稿或已送出狀態改為已取消
      */
+    @Transactional
     @Override
     public void cancelProcurement(Long id, Long operatorId) {
         log.info("取消採購，id={}, operatorId={}", id, operatorId);
@@ -202,6 +205,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     /**
      * 審核採購，已送出狀態改為審核通過
      */
+    @Transactional
     @Override
     public void approveProcurement(Long id, Long operatorId) {
         log.info("審核採購，id={}, operatorId={}", id, operatorId);
@@ -233,6 +237,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     /**
      * 開始處理採購，審核通過狀態改為處理中
      */
+    @Transactional
     @Override
     public void startProcurement(Long id, Long operatorId) {
         log.info("開始處理採購，id={}, operatorId={}", id, operatorId);
@@ -265,6 +270,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      * 完成採購(IN_PROGRESS -> COMPLETED)，檢查完成月份是否已鎖定，
      * 並自動計算 purchaseMonth 與 expiryDate（完成日加兩年）
      */
+    @Transactional
     @Override
     public void completeProcurement(Long id, CompleteProcurementRequest request, Long operatorId) {
         log.info("完成採購，id={}, completedDate={}, operatorId={}", id, request.getCompletedDate(), operatorId);
@@ -309,6 +315,7 @@ public class ProcurementServiceImpl implements ProcurementService {
      * 作廢採購(COMPLETED -> VOID)，檢查該筆採購原始完成日所屬月份是否已鎖定，
      * 並標記 isVoid = 1
      */
+    @Transactional
     @Override
     public void voidProcurement(Long id, Long operatorId) {
         log.info("作廢採購，id={}, operatorId={}", id, operatorId);
