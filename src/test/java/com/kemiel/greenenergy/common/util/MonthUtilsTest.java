@@ -19,7 +19,10 @@ class MonthUtilsTest {
     @Test
     @DisplayName("isEditable：當月仍在補填期間內，回傳 true")
     void isEditable_withinDeadline_returnsTrue() {
-        assertThat(MonthUtils.isEditable(YearMonth.of(2026, 4))).isTrue();
+        Clock fixedClock = Clock.fixed(
+                LocalDate.of(2026, 5, 3).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+                ZoneId.systemDefault());
+        assertThat(MonthUtils.isEditable(YearMonth.of(2026, 4), fixedClock)).isTrue();
     }
 
     @Test
