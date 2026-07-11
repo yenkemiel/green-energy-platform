@@ -50,8 +50,9 @@
     <update id="updateById" parameterType="com.kemiel.greenenergy.module.user.entity.User">
         UPDATE users
         SET display_name = #{displayName},
-            is_active    = #{isActive},
-            updated_at   = NOW()
+        role         = #{role},
+        is_active    = #{isActive},
+        updated_at   = NOW()
         WHERE id = #{id} AND is_deleted = 0
     </update>
 
