@@ -33,7 +33,7 @@ public class UserController {
             @RequestParam(required = false) RoleType role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
-            ) {
+    ) {
         PageResult<UserResponse> result = userService.listUsers(role, page, size);
         return ResponseEntity.ok(ApiResponse.success(result));
 
@@ -57,7 +57,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
-        UserResponse response = userService.updateUser(id,request);
+        Long operatorId = SecurityUtils.getCurrentUserId();
+        UserResponse response = userService.updateUser(id, request, operatorId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

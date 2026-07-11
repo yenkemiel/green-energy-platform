@@ -10,8 +10,7 @@ import com.kemiel.greenenergy.module.user.dto.*;
 public interface UserService {
     PageResult<UserResponse> listUsers(RoleType role, int page, int size);
     UserResponse createUser(CreateUserRequest request, Long operatorId);
-    UserResponse updateUser(Long id, UpdateUserRequest request);
-    void updateUserStatus(Long id, UpdateUserStatusRequest request);
+    UserResponse updateUser(Long id, UpdateUserRequest request, Long operatorId);    void updateUserStatus(Long id, UpdateUserStatusRequest request);
     void resetPassword(Long id, ChangePasswordRequest request);
     void changeMyPassword(ChangePasswordRequest request, Long operatorId);
 }

@@ -120,11 +120,11 @@ public class ContractServiceImpl implements ContractService {
     }
 
     /**
-     * 修改合約（僅限 ACTIVE 狀態，費率不可變更），檢查修改區間是否涵蓋已鎖定月份；
-     * 供電區間若有變動，一併檢查舊區間是否涵蓋已鎖定月份，避免把鎖定月份移出區間
-     * 而改變其已凍結的數字
+     * 修改合約（僅限 ACTIVE 狀態，費率不可變更），供電區間若有變動，新舊區間各自檢查月份鎖定，
+     * 避免把鎖定月份移出區間而改變其已凍結的數字，並寫入 Audit Log 記錄異動前後值
      */
     @Override
+    @Transactional
     public ContractResponse updateContract(Long id, UpdateContractRequest request, Long operatorId) {
         log.info("修改合約，id={}, operatorId={}", id, operatorId);
         Contract contract = contractMapper.selectById(id);
@@ -153,6 +153,11 @@ public class ContractServiceImpl implements ContractService {
             monthLockChecker.assertNoLockedMonthInRange(contract.getStartDate(), contract.getEndDate());
         }
 
+        String beforeValue = String.format(
+                "{\"supplierName\": \"%s\", \"monthlySupplyKwh\": \"%s\", \"startDate\": \"%s\", \"endDate\": \"%s\"}",
+                contract.getSupplierName(), contract.getMonthlySupplyKwh(),
+                contract.getStartDate(), contract.getEndDate());
+
         contract.setSupplierName(request.getSupplierName());
         contract.setMonthlySupplyKwh(request.getMonthlySupplyKwh());
         contract.setStartDate(request.getStartDate());
@@ -161,6 +166,16 @@ public class ContractServiceImpl implements ContractService {
         contract.setUpdatedBy(operatorId);
 
         contractMapper.updateById(contract);
+
+        String afterValue = String.format(
+                "{\"supplierName\": \"%s\", \"monthlySupplyKwh\": \"%s\", \"startDate\": \"%s\", \"endDate\": \"%s\"}",
+                request.getSupplierName(), request.getMonthlySupplyKwh(),
+                request.getStartDate(), request.getEndDate());
+        User operator = userMapper.selectById(operatorId);
+        auditLogHelper.log(
+                AuditAction.UPDATE.name(), "contracts", id,
+                beforeValue, afterValue, operatorId, operator.getDisplayName());
+
         log.info("合約修改成功，contractId={}", id);
         return toResponse(contractMapper.selectById(id));
     }

@@ -2,10 +2,12 @@ package com.kemiel.greenenergy.module.user.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.kemiel.greenenergy.common.enums.AuditAction;
 import com.kemiel.greenenergy.common.enums.RoleType;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.response.PageResult;
+import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.module.user.dto.*;
 import com.kemiel.greenenergy.module.user.entity.User;
 import com.kemiel.greenenergy.module.user.mapper.UserMapper;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,6 +29,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogHelper auditLogHelper;
 
     /**
      * 查詢使用者清單（支援分頁與角色篩選）
@@ -66,15 +70,33 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 更新使用者帳號啟用狀態（is_active），停用後帳號無法登入但資料不刪除（非軟刪除）
+     * 修改使用者顯示名稱與角色，並寫入 Audit Log 記錄異動前後值
+     *
+     * @param operatorId 操作者 userId
      */
     @Override
-    public UserResponse updateUser(Long id, UpdateUserRequest request) {
-        log.info("修改使用者資料，id={}, role={}", id, request.getRole());
+    @Transactional
+    public UserResponse updateUser(Long id, UpdateUserRequest request, Long operatorId) {
+        log.info("修改使用者資料，id={}, role={}, operatorId={}", id, request.getRole(), operatorId);
         User user = findUserOrThrow(id);
+
+        String beforeValue = String.format(
+                "{\"displayName\": \"%s\", \"role\": \"%s\"}",
+                user.getDisplayName(), user.getRole().name());
+
         user.setDisplayName(request.getDisplayName());
         user.setRole(request.getRole());
         userMapper.updateById(user);
+
+        String afterValue = String.format(
+                "{\"displayName\": \"%s\", \"role\": \"%s\"}",
+                request.getDisplayName(), request.getRole().name());
+        User operator = findUserOrThrow(operatorId);
+        auditLogHelper.log(
+                AuditAction.UPDATE.name(), "users", id,
+                beforeValue, afterValue, operatorId, operator.getDisplayName());
+
+        log.info("使用者資料修改成功，id={}", id);
         return toResponse(userMapper.selectById(id));
     }
 
