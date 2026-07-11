@@ -5,6 +5,7 @@ import com.kemiel.greenenergy.common.enums.ElectricityRecordStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
+import com.kemiel.greenenergy.common.util.MonthUtils;
 import com.kemiel.greenenergy.module.electricity.dto.CreateElectricityUsageRequest;
 import com.kemiel.greenenergy.module.electricity.dto.ElectricityUsageResponse;
 import com.kemiel.greenenergy.module.electricity.dto.UpdateElectricityUsageRequest;
@@ -21,8 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -166,13 +167,10 @@ public class ElectricityUsageServiceImpl implements ElectricityUsageService {
     }
 
     /**
-     * 驗證補填截止日，超過下個月 5 號則拋出例外
+     * 驗證補填截止日，超過次月 5 號則拋出例外；截止規則統一由 MonthUtils.isEditable 判斷
      */
     private void validateDeadline(Integer recordYear, Integer recordMonth) {
-        LocalDate deadline = LocalDate.of(recordYear, recordMonth, 1)
-                .plusMonths(1)
-                .withDayOfMonth(5);
-        if (LocalDate.now().isAfter(deadline)) {
+        if (!MonthUtils.isEditable(YearMonth.of(recordYear, recordMonth))) {
             throw new BusinessException(ErrorCode.ELECTRICITY_RECORD_EXPIRED);
         }
     }
