@@ -6,6 +6,7 @@ import com.kemiel.greenenergy.common.enums.DeviceStatus;
 import com.kemiel.greenenergy.common.exception.BusinessException;
 import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.response.PageResult;
+import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.solar.dto.CreateSolarDeviceRequest;
 import com.kemiel.greenenergy.module.solar.dto.SolarDeviceResponse;
 import com.kemiel.greenenergy.module.solar.dto.UpdateSolarDeviceStatusRequest;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,9 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SolarDeviceServiceImpl implements SolarDeviceService {
 
-    private static final BigDecimal DAILY_SUN_HOURS = new BigDecimal("3.5");
-
     private final SolarDeviceMapper solarDeviceMapper;
+    private final GreenEnergyCalculationService calculationService;
 
     @Override
     public PageResult<SolarDeviceResponse> listDevices(String status, int page, int size) {
@@ -92,11 +91,8 @@ public class SolarDeviceServiceImpl implements SolarDeviceService {
      * 將 SolarDevice entity 轉為 SolarDeviceResponse，理論月發電量依查詢當下月份天數即時計算
      */
     private SolarDeviceResponse toResponse(SolarDevice device) {
-        int daysInMonth = YearMonth.now().lengthOfMonth();
-        BigDecimal theoreticalMonthlyKwh = device.getCapacityKw()
-                .multiply(DAILY_SUN_HOURS)
-                .multiply(BigDecimal.valueOf(daysInMonth))
-                .setScale(4, RoundingMode.HALF_UP);
+        BigDecimal theoreticalMonthlyKwh = calculationService
+                .calculateTheoreticalSolarKwh(device.getCapacityKw(), YearMonth.now());
         return SolarDeviceResponse.builder()
                 .id(device.getId())
                 .deviceName(device.getDeviceName())

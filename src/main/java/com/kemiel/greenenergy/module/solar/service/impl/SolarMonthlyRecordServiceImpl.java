@@ -7,6 +7,7 @@ import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.common.util.MonthLockChecker;
 import com.kemiel.greenenergy.common.util.MonthUtils;
+import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.greenenergy.config.AnomalyConfig;
 import com.kemiel.greenenergy.module.notification.service.NotificationService;
 import com.kemiel.greenenergy.module.solar.dto.CreateSolarMonthlyRecordRequest;
@@ -24,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -44,6 +44,7 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
     private final AuditLogHelper auditLogHelper;
     private final UserMapper userMapper;
     private final MonthLockChecker monthLockChecker;
+    private final GreenEnergyCalculationService calculationService;
 
     /**
      * 查詢指定設備指定年度所有月份發電紀錄
@@ -101,7 +102,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
         monthLockChecker.assertNotLocked(yearMonth);
 
-        BigDecimal theoreticalKwh = calculateTheoreticalKwh(device.getCapacityKw(), yearMonth);
+        BigDecimal theoreticalKwh = calculationService
+                .calculateTheoreticalSolarKwh(device.getCapacityKw(), yearMonth);
 
         SolarMonthlyRecord record = new SolarMonthlyRecord();
         record.setDeviceId(deviceId);
@@ -149,7 +151,8 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
 
         monthLockChecker.assertNotLocked(yearMonth);
 
-        BigDecimal theoreticalKwh = calculateTheoreticalKwh(device.getCapacityKw(), yearMonth);
+        BigDecimal theoreticalKwh = calculationService
+                .calculateTheoreticalSolarKwh(device.getCapacityKw(), yearMonth);
 
         BigDecimal oldActualKwh = record.getActualKwh();
 
@@ -229,16 +232,6 @@ public class SolarMonthlyRecordServiceImpl implements SolarMonthlyRecordService 
         }
     }
 
-    /**
-     * 計算理論月發電量（capacity_kw × 3.5 × 當月天數）
-     */
-    private BigDecimal calculateTheoreticalKwh(BigDecimal capacityKw, YearMonth yearMonth) {
-        int daysInMonth = yearMonth.lengthOfMonth();
-        return  capacityKw
-                .multiply(BigDecimal.valueOf(3.5))
-                .multiply(BigDecimal.valueOf(daysInMonth))
-                .setScale(4, RoundingMode.HALF_UP);
-    }
     private SolarMonthlyRecordResponse toResponse(SolarMonthlyRecord record) {
         return SolarMonthlyRecordResponse.builder()
                 .id(record.getId())

@@ -6,6 +6,7 @@ import com.kemiel.greenenergy.module.greenenergy.calculation.dto.PredictionResul
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.SimulationResult;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 
 /**
  * 跨模組綠電計算 Service 介面
@@ -40,5 +41,10 @@ public interface GreenEnergyCalculationService {
     MonthlySummaryResult getEffectiveMonthlySummary(int year, int month);
 
     BigDecimal resolveRequiredGreenKwh(int year);
+
+    BigDecimal calculateTheoreticalSolarKwh(BigDecimal capacityKw, YearMonth yearMonth);
+
+    BigDecimal calculateCertificateKwh(int quantity);
+
 
 }

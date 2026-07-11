@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,7 +45,9 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     private final AnnualTargetMapper annualTargetMapper;
 
     private static final BigDecimal CO2_FACTOR = new BigDecimal("0.494");
-    private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1000);
+    private static final BigDecimal KG_PER_TON = BigDecimal.valueOf(1000);
+    private static final BigDecimal DAILY_SUN_HOURS = new BigDecimal("3.5");
+    private static final BigDecimal KWH_PER_CERTIFICATE = BigDecimal.valueOf(1000);
 
     /**
      * 從三個綠電來源（太陽能、合約、採購）動態計算指定月份的彙整結果，包含達成率、結餘與資料完整度
@@ -160,12 +163,12 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     }
 
     /**
-     * 計算 CO₂ 減少量（公噸），以台灣電力碳排放係數 0.494 換算
+     * 計算 CO₂ 減少量（公噸），以台灣電力碳排放係數 0.494 換算，保留 2 位小數
      */
     @Override
     public BigDecimal calculateCo2Reduced(BigDecimal greenKwh) {
         return greenKwh.multiply(CO2_FACTOR)
-                .divide(ONE_THOUSAND, 2, RoundingMode.HALF_UP);
+                .divide(KG_PER_TON, 2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -179,6 +182,25 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
                                                 BigDecimal re100TargetRatio) {
         return annualElectricityKwh.multiply(re100TargetRatio)
                 .setScale(4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 計算太陽能理論月發電量（capacity_kw × 日照 3.5 小時 × 當月天數），保留 4 位小數
+     */
+    @Override
+    public BigDecimal calculateTheoreticalSolarKwh(BigDecimal capacityKw, YearMonth yearMonth) {
+        return capacityKw
+                .multiply(DAILY_SUN_HOURS)
+                .multiply(BigDecimal.valueOf(yearMonth.lengthOfMonth()))
+                .setScale(4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 憑證張數換算綠電度數（1 張 T-REC = 1000 kWh）
+     */
+    @Override
+    public BigDecimal calculateCertificateKwh(int quantity) {
+        return BigDecimal.valueOf(quantity).multiply(KWH_PER_CERTIFICATE);
     }
 
     /**
@@ -348,7 +370,7 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
                 additionalContractKwh, additionalProcurementQuantity);
 
         BigDecimal additionalProcurementKwh =
-                BigDecimal.valueOf(additionalProcurementQuantity).multiply(ONE_THOUSAND);
+                calculateCertificateKwh(additionalProcurementQuantity);
 
         BigDecimal simulatedAdditionalKwh =
                 additionalContractKwh.add(additionalProcurementKwh);

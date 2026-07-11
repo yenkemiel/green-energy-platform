@@ -9,6 +9,7 @@ import com.kemiel.greenenergy.common.exception.ErrorCode;
 import com.kemiel.greenenergy.common.util.AuditLogHelper;
 import com.kemiel.greenenergy.common.response.PageResult;
 import com.kemiel.greenenergy.common.util.MonthLockChecker;
+import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.procurement.dto.*;
 import com.kemiel.greenenergy.module.procurement.entity.Procurement;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
@@ -37,6 +38,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     private final AuditLogHelper auditLogHelper;
     private final UserMapper userMapper;
     private final MonthLockChecker monthLockChecker;
+    private final GreenEnergyCalculationService calculationService;
 
     /**
      * 查詢採購清單（支援分頁、狀態與作廢篩選）
@@ -72,8 +74,7 @@ public class ProcurementServiceImpl implements ProcurementService {
     @Override
     public ProcurementResponse createProcurement(CreateProcurementRequest request, Long operatorId) {
         log.info("建立採購草稿，supplierName={}, operatorId={}", request.getSupplierName(), operatorId);
-        BigDecimal kwhEquivalent = BigDecimal.valueOf(request.getQuantity())
-                                            .multiply(BigDecimal.valueOf(1000));
+        BigDecimal kwhEquivalent = calculationService.calculateCertificateKwh(request.getQuantity());
         BigDecimal totalAmount = request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
 
         Procurement procurement = new Procurement();
@@ -112,8 +113,7 @@ public class ProcurementServiceImpl implements ProcurementService {
             throw new BusinessException(ErrorCode.PROCUREMENT_STATUS_INVALID);
         }
 
-        BigDecimal kwhEquivalent = BigDecimal.valueOf(request.getQuantity())
-                .multiply(BigDecimal.valueOf(1000));
+        BigDecimal kwhEquivalent = calculationService.calculateCertificateKwh(request.getQuantity());
         BigDecimal totalAmount = request.getUnitPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
 
         procurement.setSupplierName(request.getSupplierName());
