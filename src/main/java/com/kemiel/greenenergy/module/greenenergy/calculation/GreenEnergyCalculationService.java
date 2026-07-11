@@ -37,4 +37,8 @@ public interface GreenEnergyCalculationService {
                               BigDecimal additionalContractKwh,
                               int additionalProcurementQuantity);
 
+    MonthlySummaryResult getEffectiveMonthlySummary(int year, int month);
+
+    BigDecimal resolveRequiredGreenKwh(int year);
+
 }

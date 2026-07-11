@@ -222,7 +222,8 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
     }
 
     /**
-     * 以線性回歸外推年底預估達成率，僅取月份連續序列（遇第一個缺漏月份即停止累積），
+     * 以線性回歸外推年底預估達成率，僅取月份連續序列（遇第一個缺漏月份即停止累積）；
+     * 已鎖定月份取 snapshot 的定案達成率，未鎖定月份動態計算，
      * 未達年底的月份以外推值補全並限縮在 [0, 1]；預估年底缺口以年度預估用電量
      * （非已依目標比例折算的 requiredGreenKwh）乘以預估達成率推導預估綠電量，
      * 再與 requiredGreenKwh 計算差額，避免目標比例重複套用導致缺口失真
@@ -236,12 +237,10 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
         Map<Integer, BigDecimal> monthlyRates = new LinkedHashMap<>();
 
         for (int month = 1; month <= 12; month++) {
-            ElectricityUsageRecord usageRecord =
-                    electricityUsageRecordMapper.selectByYearAndMonth(year, month);
-            if (usageRecord == null) {
+            MonthlySummaryResult result = getEffectiveMonthlySummary(year, month);
+            if (result.getUsageKwh() == null) {
                 break;
             }
-            MonthlySummaryResult result = calculateMonthlySummary(year, month);
             if (result.getAchievementRate() != null) {
                 monthlyRates.put(month, result.getAchievementRate());
             }
@@ -376,6 +375,50 @@ public class GreenEnergyCalculationServiceImpl implements GreenEnergyCalculation
                         .additionalProcurementKwh(additionalProcurementKwh)
                         .build())
                 .build();
+    }
+
+    /**
+     * 取得指定月份的有效彙整結果：已鎖定（存在 snapshot）讀取快照定案值，
+     * 未鎖定則動態計算。快照月份的 status 固定為 LOCKED、completeness 固定為 100
+     * （快照未儲存完整度，鎖定即視為定案）；快照的 usageKwh 與 achievementRate
+     * 依寫入慣例不會是 null（無值時存 0）
+     */
+    @Override
+    public MonthlySummaryResult getEffectiveMonthlySummary(int year, int month) {
+        log.info("查詢有效月度彙整，year={}, month={}", year, month);
+
+        MonthlySummarySnapshot snapshot =
+                monthlySummarySnapshotMapper.selectByYearAndMonth(year, month);
+        if (snapshot == null) {
+            return calculateMonthlySummary(year, month);
+        }
+        return MonthlySummaryResult.builder()
+                .year(year)
+                .month(month)
+                .solarKwh(snapshot.getSolarKwh())
+                .contractKwh(snapshot.getContractKwh())
+                .procurementKwh(snapshot.getProcurementKwh())
+                .totalGreenKwh(snapshot.getTotalGreenKwh())
+                .usageKwh(snapshot.getUsageKwh())
+                .achievementRate(snapshot.getAchievementRate())
+                .surplusKwh(snapshot.getSurplusKwh())
+                .completeness(100)
+                .status(MonthRecordStatus.LOCKED.name())
+                .build();
+    }
+
+    /**
+     * 查詢指定年度目標並推導年度需要綠電量，未設定年度目標時回傳 null
+     */
+    @Override
+    public BigDecimal resolveRequiredGreenKwh(int year) {
+        log.info("查詢年度目標並推導需要綠電量，year={}", year);
+        AnnualTarget target = annualTargetMapper.selectByYear(year);
+        if (target == null) {
+            return null;
+        }
+        return calculateRequiredGreenKwh(
+                target.getAnnualElectricityKwh(), target.getRe100TargetRatio());
     }
 
 }

@@ -4,12 +4,8 @@ import com.kemiel.greenenergy.common.enums.MonthRecordStatus;
 import com.kemiel.greenenergy.common.enums.SupplyType;
 import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
-import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
-import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
 import com.kemiel.greenenergy.module.procurement.dto.ProcurementKwhBySupplyType;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
-import com.kemiel.greenenergy.module.target.entity.AnnualTarget;
-import com.kemiel.greenenergy.module.target.mapper.AnnualTargetMapper;
 import com.kemiel.greenenergy.module.trend.dto.MonthlyTrendItem;
 import com.kemiel.greenenergy.module.trend.dto.MonthlyTrendResponse;
 import com.kemiel.greenenergy.module.trend.service.TrendService;
@@ -31,9 +27,7 @@ import java.util.List;
 public class TrendServiceImpl implements TrendService {
 
     private final GreenEnergyCalculationService calculationService;
-    private final MonthlySummarySnapshotMapper snapshotMapper;
     private final ProcurementMapper procurementMapper;
-    private final AnnualTargetMapper annualTargetMapper;
 
     /**
      * 查詢指定年度 12 個月的趨勢報表，LOCKED 月份讀 snapshot、OPEN 月份動態計算，
@@ -45,11 +39,7 @@ public class TrendServiceImpl implements TrendService {
     public MonthlyTrendResponse getMonthlyTrend(int year) {
         log.info("查詢月度趨勢報表，year={}", year);
 
-        AnnualTarget target = annualTargetMapper.selectByYear(year);
-        BigDecimal requiredGreenKwh = (target != null)
-                ? calculationService.calculateRequiredGreenKwh(
-                target.getAnnualElectricityKwh(), target.getRe100TargetRatio())
-                : null;
+        BigDecimal requiredGreenKwh = calculationService.resolveRequiredGreenKwh(year);
 
         List<MonthlyTrendItem> months = new ArrayList<>();
 
@@ -65,59 +55,26 @@ public class TrendServiceImpl implements TrendService {
     }
 
     /**
-     * 組裝單月趨勢資料，LOCKED 月份從 snapshot 讀取，OPEN 月份動態計算，無資料回傳空白項目。
+     * 組裝單月趨勢資料，透過 getEffectiveMonthlySummary 取得有效彙整
+     * （LOCKED 月份為 snapshot 定案值、OPEN 月份動態計算），無資料回傳空白項目。
+     * 依既有行為，LOCKED 月份即使 achievementRate 為 0 也計算 gapKwh，
+     * OPEN 月份則需 achievementRate 有值才計算
      *
      * @param year             年份
      * @param month            月份
      * @param requiredGreenKwh 年度需要綠電量（null 表示未設定年度目標）
      */
     private MonthlyTrendItem buildTrendItem(int year, int month, BigDecimal requiredGreenKwh) {
-        MonthlySummarySnapshot snapshot = snapshotMapper.selectByYearAndMonth(year, month);
+        MonthlySummaryResult result = calculationService.getEffectiveMonthlySummary(year, month);
+        boolean locked = MonthRecordStatus.LOCKED.name().equals(result.getStatus());
 
-        if (snapshot != null) {
-            BigDecimal gapKwh = requiredGreenKwh != null
-                    ? calculationService.calculateGap(
-                    requiredGreenKwh.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP),
-                    snapshot.getTotalGreenKwh())
-                    : null;
-
-            BigDecimal physicalKwh = BigDecimal.ZERO;
-            BigDecimal recOnlyKwh = BigDecimal.ZERO;
-            List<ProcurementKwhBySupplyType> procByType =
-                    procurementMapper.selectSumKwhGroupBySupplyType(year, month);
-            for (ProcurementKwhBySupplyType p : procByType) {
-                if (SupplyType.PHYSICAL.name().equals(p.getSupplyType())) {
-                    physicalKwh = p.getKwh();
-                } else if (SupplyType.REC_ONLY.name().equals(p.getSupplyType())) {
-                    recOnlyKwh = p.getKwh();
-                }
-            }
-
-            return MonthlyTrendItem.builder()
-                    .month(month)
-                    .usageKwh(snapshot.getUsageKwh())
-                    .totalGreenKwh(snapshot.getTotalGreenKwh())
-                    .solarKwh(snapshot.getSolarKwh())
-                    .contractKwh(snapshot.getContractKwh())
-                    .procurementKwh(snapshot.getProcurementKwh())
-                    .procurementPhysicalKwh(physicalKwh)
-                    .procurementRecOnlyKwh(recOnlyKwh)
-                    .achievementRate(snapshot.getAchievementRate())
-                    .gapKwh(gapKwh)
-                    .surplusKwh(snapshot.getSurplusKwh())
-                    .status(MonthRecordStatus.LOCKED.name())
-                    .build();
+        if (!locked && result.getUsageKwh() == null
+                && result.getTotalGreenKwh().compareTo(BigDecimal.ZERO) == 0) {
+            return MonthlyTrendItem.builder().month(month).build();
         }
 
-        MonthlySummaryResult result = calculationService.calculateMonthlySummary(year, month);
-
-        if (result.getUsageKwh() == null && result.getTotalGreenKwh().compareTo(BigDecimal.ZERO) == 0) {
-            return MonthlyTrendItem.builder()
-                    .month(month)
-                    .build();
-        }
-
-        BigDecimal gapKwh = (requiredGreenKwh != null && result.getAchievementRate() != null)
+        BigDecimal gapKwh = (requiredGreenKwh != null
+                && (locked || result.getAchievementRate() != null))
                 ? calculationService.calculateGap(
                 requiredGreenKwh.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP),
                 result.getTotalGreenKwh())

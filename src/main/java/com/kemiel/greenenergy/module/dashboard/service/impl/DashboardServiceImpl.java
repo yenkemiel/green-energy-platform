@@ -1,5 +1,6 @@
 package com.kemiel.greenenergy.module.dashboard.service.impl;
 
+import com.kemiel.greenenergy.common.util.MonthUtils;
 import com.kemiel.greenenergy.module.contract.dto.ContractActiveStats;
 import com.kemiel.greenenergy.module.contract.entity.Contract;
 import com.kemiel.greenenergy.module.contract.mapper.ContractMapper;
@@ -11,18 +12,15 @@ import com.kemiel.greenenergy.module.electricity.entity.ElectricityUsageRecord;
 import com.kemiel.greenenergy.module.electricity.mapper.ElectricityUsageRecordMapper;
 import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
-import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
-import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
 import com.kemiel.greenenergy.module.procurement.mapper.ProcurementMapper;
 import com.kemiel.greenenergy.module.solar.mapper.SolarMonthlyRecordMapper;
-import com.kemiel.greenenergy.module.target.entity.AnnualTarget;
-import com.kemiel.greenenergy.module.target.mapper.AnnualTargetMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +36,6 @@ import java.util.stream.IntStream;
 public class DashboardServiceImpl implements DashboardService {
 
     private final GreenEnergyCalculationService calculationService;
-    private final MonthlySummarySnapshotMapper snapshotMapper;
-    private final AnnualTargetMapper annualTargetMapper;
     private final ContractMapper contractMapper;
     private final ProcurementMapper procurementMapper;
     private final SolarMonthlyRecordMapper solarMonthlyRecordMapper;
@@ -62,26 +58,15 @@ public class DashboardServiceImpl implements DashboardService {
         BigDecimal totalUsageKwh = BigDecimal.ZERO;
 
         for (Integer month : months) {
-            MonthlySummarySnapshot snapshot =
-                    snapshotMapper.selectByYearAndMonth(targetYear, month);
-            if (snapshot != null) {
-                totalGreenKwh = totalGreenKwh.add(snapshot.getTotalGreenKwh());
-                totalUsageKwh = totalUsageKwh.add(snapshot.getUsageKwh());
-            } else {
-                MonthlySummaryResult result =
-                        calculationService.calculateMonthlySummary(targetYear, month);
-                totalGreenKwh = totalGreenKwh.add(result.getTotalGreenKwh());
-                if (result.getUsageKwh() != null) {
-                    totalUsageKwh = totalUsageKwh.add(result.getUsageKwh());
-                }
+            MonthlySummaryResult result =
+                    calculationService.getEffectiveMonthlySummary(targetYear, month);
+            totalGreenKwh = totalGreenKwh.add(result.getTotalGreenKwh());
+            if (result.getUsageKwh() != null) {
+                totalUsageKwh = totalUsageKwh.add(result.getUsageKwh());
             }
         }
 
-        AnnualTarget target = annualTargetMapper.selectByYear(targetYear);
-        BigDecimal requiredGreenKwh = (target != null)
-                ? calculationService.calculateRequiredGreenKwh(
-                target.getAnnualElectricityKwh(), target.getRe100TargetRatio())
-                : null;
+        BigDecimal requiredGreenKwh = calculationService.resolveRequiredGreenKwh(targetYear);
 
         BigDecimal achievementRate = null;
         BigDecimal gapKwh = null;
@@ -139,25 +124,27 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     /**
-     * 組裝待處理事項，含履約合約、採購進度、缺漏資料、即將到期合約
+     * 組裝待處理事項，含履約合約、採購進度、缺漏資料、即將到期合約；
+     * 缺漏資料檢查以 MonthUtils.currentMonth() 判斷歸屬月份（次月 5 號前查上月），
+     * 而非日曆當月，避免月結截止日未到就提醒還沒結束的月份
      */
     private PendingItemsResponse buildPendingItems(LocalDate today) {
-        ContractActiveStats stats = contractMapper.selectActiveContractStats(today);  // 原本呼叫無參數
+        ContractActiveStats stats = contractMapper.selectActiveContractStats(today);
         int inProgressProcurements = procurementMapper.countInProgress();
 
         List<String> missingDataItems = new ArrayList<>();
-        int currentMonth = today.getMonthValue();
+        YearMonth attributionMonth = MonthUtils.currentMonth();
         boolean solarFilled = solarMonthlyRecordMapper.existsByYearAndMonth(
-                today.getYear(), currentMonth);
+                attributionMonth.getYear(), attributionMonth.getMonthValue());
         if (!solarFilled) {
-            missingDataItems.add("太陽能發電（" + today.getYear() + "-"
-                    + String.format("%02d", currentMonth) + "）");
+            missingDataItems.add("太陽能發電（" + attributionMonth.getYear() + "-"
+                    + String.format("%02d", attributionMonth.getMonthValue()) + "）");
         }
         ElectricityUsageRecord usageRecord = electricityUsageRecordMapper.selectByYearAndMonth(
-                today.getYear(), currentMonth);
+                attributionMonth.getYear(), attributionMonth.getMonthValue());
         if (usageRecord == null) {
-            missingDataItems.add("用電量（" + today.getYear() + "-"
-                    + String.format("%02d", currentMonth) + "）");
+            missingDataItems.add("用電量（" + attributionMonth.getYear() + "-"
+                    + String.format("%02d", attributionMonth.getMonthValue()) + "）");
         }
 
         LocalDate thresholdDate = today.plusDays(30);

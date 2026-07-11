@@ -3,14 +3,10 @@ package com.kemiel.greenenergy.module.simulation.service.impl;
 import com.kemiel.greenenergy.module.greenenergy.calculation.GreenEnergyCalculationService;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.MonthlySummaryResult;
 import com.kemiel.greenenergy.module.greenenergy.calculation.dto.SimulationResult;
-import com.kemiel.greenenergy.module.greenenergy.entity.MonthlySummarySnapshot;
-import com.kemiel.greenenergy.module.greenenergy.mapper.MonthlySummarySnapshotMapper;
 import com.kemiel.greenenergy.module.simulation.dto.SimulationBreakdownResponse;
 import com.kemiel.greenenergy.module.simulation.dto.SimulationRequest;
 import com.kemiel.greenenergy.module.simulation.dto.SimulationResponse;
 import com.kemiel.greenenergy.module.simulation.service.SimulationService;
-import com.kemiel.greenenergy.module.target.entity.AnnualTarget;
-import com.kemiel.greenenergy.module.target.mapper.AnnualTargetMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,8 +23,6 @@ import java.time.LocalDate;
 public class SimulationServiceImpl implements SimulationService {
 
     private final GreenEnergyCalculationService calculationService;
-    private final MonthlySummarySnapshotMapper snapshotMapper;
-    private final AnnualTargetMapper annualTargetMapper;
 
     /**
      * 執行 RE100 達成模擬，彙整今年 1 月至當月的實際綠電量（LOCKED 月份讀 snapshot，
@@ -48,26 +42,15 @@ public class SimulationServiceImpl implements SimulationService {
         BigDecimal totalUsageKwh = BigDecimal.ZERO;
 
         for (int month = 1; month <= currentMonth; month++) {
-            MonthlySummarySnapshot snapshot =
-                    snapshotMapper.selectByYearAndMonth(currentYear, month);
-            if (snapshot != null) {
-                totalGreenKwh = totalGreenKwh.add(snapshot.getTotalGreenKwh());
-                totalUsageKwh = totalUsageKwh.add(snapshot.getUsageKwh());
-            } else {
-                MonthlySummaryResult result =
-                        calculationService.calculateMonthlySummary(currentYear, month);
-                totalGreenKwh = totalGreenKwh.add(result.getTotalGreenKwh());
-                if (result.getUsageKwh() != null) {
-                    totalUsageKwh = totalUsageKwh.add(result.getUsageKwh());
-                }
+            MonthlySummaryResult result =
+                    calculationService.getEffectiveMonthlySummary(currentYear, month);
+            totalGreenKwh = totalGreenKwh.add(result.getTotalGreenKwh());
+            if (result.getUsageKwh() != null) {
+                totalUsageKwh = totalUsageKwh.add(result.getUsageKwh());
             }
         }
 
-        AnnualTarget target = annualTargetMapper.selectByYear(currentYear);
-        BigDecimal requiredGreenKwh = (target != null)
-                ? calculationService.calculateRequiredGreenKwh(
-                target.getAnnualElectricityKwh(), target.getRe100TargetRatio())
-                : null;
+        BigDecimal requiredGreenKwh = calculationService.resolveRequiredGreenKwh(currentYear);
 
         SimulationResult result = calculationService.simulate(
                 totalGreenKwh,
