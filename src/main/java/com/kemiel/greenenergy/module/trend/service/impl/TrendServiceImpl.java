@@ -57,8 +57,10 @@ public class TrendServiceImpl implements TrendService {
     /**
      * 組裝單月趨勢資料，透過 getEffectiveMonthlySummary 取得有效彙整
      * （LOCKED 月份為 snapshot 定案值、OPEN 月份動態計算），無資料回傳空白項目。
-     * 依既有行為，LOCKED 月份即使 achievementRate 為 0 也計算 gapKwh，
-     * OPEN 月份則需 achievementRate 有值才計算
+     * gapKwh 只依賴年度目標與總綠電量，口徑與 Dashboard 一致；
+     * PHYSICAL/REC_ONLY 細項因 snapshot 未儲存型態分解，一律動態查詢——
+     * 已知限制：鎖定後採購資料若曾異動（DEFER-005 修復前的舊資料），
+     * 細項加總可能與 snapshot 的 procurementKwh 總數不一致
      *
      * @param year             年份
      * @param month            月份
@@ -73,8 +75,7 @@ public class TrendServiceImpl implements TrendService {
             return MonthlyTrendItem.builder().month(month).build();
         }
 
-        BigDecimal gapKwh = (requiredGreenKwh != null
-                && (locked || result.getAchievementRate() != null))
+        BigDecimal gapKwh = requiredGreenKwh != null
                 ? calculationService.calculateGap(
                 requiredGreenKwh.divide(BigDecimal.valueOf(12), 4, RoundingMode.HALF_UP),
                 result.getTotalGreenKwh())
